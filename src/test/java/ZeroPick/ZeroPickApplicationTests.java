@@ -1,4 +1,4 @@
-package ZeroPick.ZeroPick;
+package ZeroPick;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
