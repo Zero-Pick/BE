@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class MemberController {
     @GetMapping("/deploy-check")
     public String checkDeployment() {
-        return "배포 성공! Spring Boot 서버가 정상적으로 실행 중입니다.";
+        return "배포 성공! Spring Boot 서버가 정상적으로 실행 중입니다. test2";
     }
 }
