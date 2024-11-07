@@ -45,17 +45,16 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} . 
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
 
-      - name: SSH and deploy with Docker Compose
+      - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
-          username: ubuntu
-          key: ${{ secrets.KEY }}
-          script: |
-            sudo docker rm -f $(sudo docker ps -aq) || echo "No containers to remove"
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
-
-            cd ~
-            sudo docker-compose up -d --build
-            sudo docker image prune -f
+            host: ${{ secrets.HOST }}
+            username: ubuntu
+            key: ${{ secrets.KEY }}
+            script: |
+              sudo docker rm $(sudo docker ps -a)
+              sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
+              cd ~
+              docker-compose up -d
+              sudo docker image prune -f
       
