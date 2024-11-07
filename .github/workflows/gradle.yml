@@ -63,6 +63,7 @@ jobs:
 
             # Docker Compose를 통해 새 컨테이너 실행
             echo "Starting deployment with Docker Compose..."
+            sudo su
             cd ~
             sudo docker-compose up -d --build
 
