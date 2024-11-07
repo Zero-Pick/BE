@@ -1,0 +1,61 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Create application.properties
+        run: |
+          cat <<EOT > ./src/main/resources/application.properties
+          spring.datasource.url=${{ secrets.DB_URL }}
+          spring.datasource.username=${{ secrets.DB_USERNAME }}
+          spring.datasource.password=${{ secrets.DB_PASSWORD }}
+          spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+          spring.jpa.properties.hibernate.show_sql=true
+          spring.jpa.properties.hibernate.format_sql=true
+          spring.jpa.hibernate.ddl-auto=update
+          EOT
+        shell: bash
+
+      - name: Build with Gradle
+        run: |
+          chmod +x gradlew 
+          ./gradlew build
+
+      - name: Docker build and push
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} . 
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
+
+      - name: SSH and deploy with Docker Compose
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          script: |
+            # 기존 컨테이너 정리 및 이미지 업데이트
+            sudo docker rm -f $(sudo docker ps -aq)
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
+            
+            # Docker Compose 실행
+            cd ~
+            sudo docker-compose up -d --build
+            sudo docker image prune -f
