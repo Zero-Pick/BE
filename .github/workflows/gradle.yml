@@ -20,6 +20,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Set up MySQL
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql database: 'testDB'
+          mysql user: 'test'
+          mysql password: 'testPW'
+
       - name: Create application.properties
         run: |
           cat <<EOT > ./src/main/resources/application.properties
