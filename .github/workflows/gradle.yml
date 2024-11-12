@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - develop2
 
 permissions:
   contents: read
