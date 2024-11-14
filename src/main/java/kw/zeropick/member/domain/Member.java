@@ -29,8 +29,5 @@ public class Member {
     @NotNull
     private LocalDate birthDate;
 
-    @NotNull
-    private String password;
-
 
 }
