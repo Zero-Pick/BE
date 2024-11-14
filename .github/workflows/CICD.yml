@@ -33,6 +33,8 @@ jobs:
       - name: Create application.properties
         run: |
           cat <<EOT > ./src/main/resources/application.properties
+          commit.hash=${{ steps.slug.outputs.sha7 }}
+          api.server.url=${{ secrets.API_URL }}
           spring.datasource.url=${{ secrets.DB_URL }}
           spring.datasource.username=${{ secrets.DB_USERNAME }}
           spring.datasource.password=${{ secrets.DB_PASSWORD }}
