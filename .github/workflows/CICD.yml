@@ -11,6 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -20,6 +21,13 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Setup MySQL
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql database: 'testDB'
+          mysql user: 'test'
+          mysql password: 'testPW'
 
       - name: Create application.properties
         run: |
@@ -45,7 +53,7 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} . 
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
 
-      - name: SSH and deploy with Docker Compose
+      - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -69,4 +77,5 @@ jobs:
             # 사용하지 않는 Docker 이미지 정리
             echo "Cleaning up unused Docker images..."
             sudo docker image prune -f || echo "No images to prune"
+
       
