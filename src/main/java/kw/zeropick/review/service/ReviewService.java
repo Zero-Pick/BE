@@ -1,12 +1,14 @@
 package kw.zeropick.review.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
 import kw.zeropick.member.domain.Member;
 import kw.zeropick.member.repository.MemberJpaRepository;
 import kw.zeropick.product.domain.Product;
 import kw.zeropick.product.repository.ProductRepository;
 import kw.zeropick.review.domain.*;
 import kw.zeropick.review.dto.ReviewRequestDto;
+import kw.zeropick.review.dto.ReviewResponseDto;
 import kw.zeropick.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.PermissionDeniedDataAccessException;
@@ -137,5 +139,49 @@ public class ReviewService {
         }
 
         reviewRepository.deleteById(reviewId);
+    }
+
+    // 단일 리뷰 조회
+    @Transactional(readOnly = true)
+    public ReviewResponseDto getReviewById(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 리뷰 없음 id: " + reviewId));
+
+        return ReviewResponseDto.builder()
+                .id(review.getId())
+                .productId(review.getProduct().getId())
+                .userId(review.getMember().getId())
+                .rating(review.getRating())
+                .title(review.getTitle())
+                .content(review.getContent())
+                .positiveTags(review.getPositiveTag().stream()
+                        .map(tag -> tag.getTagEnum())
+                        .collect(Collectors.toList()))
+                .negativeTags(review.getNegativeTag().stream()
+                        .map(tag -> tag.getTagNnum())
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    // 상품에 대한 모든 리뷰 조회
+    @Transactional(readOnly = true)
+    public List<ReviewResponseDto> getReviewsByProductId(Long productId) {
+        return reviewRepository.findAll().stream()
+                .filter(review -> review.getProduct().getId().equals(productId))
+                .map(review -> ReviewResponseDto.builder()
+                        .id(review.getId())
+                        .productId(review.getProduct().getId())
+                        .userId(review.getMember().getId())
+                        .rating(review.getRating())
+                        .title(review.getTitle())
+                        .content(review.getContent())
+                        .positiveTags(review.getPositiveTag().stream()
+                                .map(tag -> tag.getTagEnum())
+                                .collect(Collectors.toList()))
+                        .negativeTags(review.getNegativeTag().stream()
+                                .map(tag -> tag.getTagNnum())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
     }
 }

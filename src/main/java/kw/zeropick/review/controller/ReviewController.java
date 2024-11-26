@@ -1,8 +1,10 @@
 package kw.zeropick.review.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import kw.zeropick.review.domain.Review;
 import kw.zeropick.review.dto.ReviewRequestDto;
+import kw.zeropick.review.dto.ReviewResponseDto;
 import kw.zeropick.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,5 +55,17 @@ public class ReviewController {
             return ResponseEntity.ok(e.getMessage());
         }
         return ResponseEntity.ok().body("리뷰 삭제 성공");
+    }
+
+    // 단일 리뷰 조회
+    @GetMapping("/{reviewId}")
+    public ResponseEntity<ReviewResponseDto> getReviewById(@PathVariable Long reviewId) {
+        return ResponseEntity.ok(reviewService.getReviewById(reviewId));
+    }
+
+    // 상품별 리뷰 조회
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<List<ReviewResponseDto>> getReviewsByProductId(@PathVariable Long productId) {
+        return ResponseEntity.ok(reviewService.getReviewsByProductId(productId));
     }
 }
