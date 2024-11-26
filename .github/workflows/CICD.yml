@@ -51,6 +51,10 @@ jobs:
           cloud.aws.credentials.secret-key=${{ secrets.SECRET_KEY }}
           cloud.aws.region.static=ap-northeast-2
           cloud.aws.s3.bucket=zeropick-bucket
+          
+          spring.servlet.multipart.enabled=true
+          spring.servlet.multipart.max-file-size=10MB
+          spring.servlet.multipart.max-request-size=10MB
           EOT
         shell: bash
 
