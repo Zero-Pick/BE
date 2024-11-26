@@ -2,9 +2,9 @@ package kw.zeropick.review.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import java.util.ArrayList;
 import kw.zeropick.common.domain.BaseEntity;
-import kw.zeropick.review.domain.NegativeTagEnum;
-import kw.zeropick.review.domain.PositiveTagEnum;
+import kw.zeropick.product.domain.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,9 +23,15 @@ public class Review extends BaseEntity {
     @Column(name = "review_id")
     private Long id;
 
-    private List<PositiveTagEnum> positiveTag;
+    @OneToMany(mappedBy = "review", fetch = FetchType.LAZY)
+    private List<PositiveTag> positiveTag  = new ArrayList<>();
 
-    private List<NegativeTagEnum> negativeTag;
+    @OneToMany(mappedBy = "review", fetch = FetchType.LAZY)
+    private List<NegativeTag> negativeTag  = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     @NotNull
     private Long rating;
@@ -35,5 +41,4 @@ public class Review extends BaseEntity {
 
     @NotNull
     private String content;
-
 }

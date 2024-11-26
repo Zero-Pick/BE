@@ -23,4 +23,8 @@ public class NegativeTag {
 
     @Enumerated(EnumType.STRING)
     private NegativeTagEnum tagNnum;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id")
+    private Review review;
 }

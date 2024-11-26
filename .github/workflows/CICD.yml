@@ -46,6 +46,11 @@ jobs:
           spring.jpa.properties.hibernate.show_sql=true
           spring.jpa.properties.hibernate.format_sql=true
           spring.jpa.hibernate.ddl-auto=update
+          
+          cloud.aws.credentials.access-key=${{ secrets.ACCESS_KEY }}
+          cloud.aws.credentials.secret-key=${{ secrets.SECRET_KEY }}
+          cloud.aws.region.static=ap-northeast-2
+          cloud.aws.s3.bucket=zeropick-bucket
           EOT
         shell: bash
 
