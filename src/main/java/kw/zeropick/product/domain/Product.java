@@ -23,7 +23,7 @@ public class Product {
 
     private String productName;
 
-    private String barnd;
+    private String brand;
 
     @Enumerated(EnumType.STRING)
     private Category category;
@@ -36,4 +36,13 @@ public class Product {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<Review> reviews = new ArrayList<>();
+
+    @OneToOne(mappedBy = "product")
+    private Ingredient ingredient;
+
+    //식품 대분류
+    private String bigCategory;
+
+    //대표 식품명
+    private String foodName;
 }

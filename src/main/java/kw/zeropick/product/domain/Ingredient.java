@@ -15,13 +15,29 @@ public class Ingredient {
     @Column(name = "ingredient_id")
     private Long id;
 
+    private Float kcal;
+
     private Float carb;
+
+    private Float sweet;
 
     private Float protein;
 
     private Float fat;
 
-    private Float kcal;
+    private Float transFat;
 
-    private Float sweet;
+    private Float saturatedFat;
+
+    private Float natrium;
+
+    private Float cholesterol;
+
+    private Float allulose;
+
+    private Float erythritol;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "product_id", unique = true)
+    private Product product;
 }
