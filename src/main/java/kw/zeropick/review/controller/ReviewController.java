@@ -57,13 +57,13 @@ public class ReviewController {
         return ResponseEntity.ok().body("리뷰 삭제 성공");
     }
 
-    // 단일 리뷰 조회
+    //리뷰 조회
     @GetMapping("/{reviewId}")
     public ResponseEntity<ReviewResponseDto> getReviewById(@PathVariable Long reviewId) {
         return ResponseEntity.ok(reviewService.getReviewById(reviewId));
     }
 
-    // 상품별 리뷰 조회
+    //상품별 리뷰 조회
     @GetMapping("/product/{productId}")
     public ResponseEntity<List<ReviewResponseDto>> getReviewsByProductId(@PathVariable Long productId) {
         return ResponseEntity.ok(reviewService.getReviewsByProductId(productId));
