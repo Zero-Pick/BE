@@ -27,6 +27,26 @@ public class ProductController {
 
 //    비로그인
 //    상품 상세정보 조회 (조회수 카운트)
+    @Operation(summary = "상품 상세 정보 보기", description = "상품 상세 정보 보기(로그인 기능 적용 전이므로 1번유저 고정)")
+    @PostMapping("/detail/{productId}")
+    public ResponseEntity<ApiResponse> productDetail(@PathVariable Long productId) {
+        try {
+            ProductDto productDto = productService.productDetail(productId);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .check(true)
+                            .information(productDto)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information(e.getMessage())
+                            .build()
+            );
+        }
+    }
 
 //    검색기능(필터가 많아 나중에)
 

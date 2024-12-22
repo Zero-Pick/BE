@@ -11,4 +11,6 @@ public interface ProductService {
 
     public List<ProductDto> bookmarkProductList(Long memberId);
     public List<ProductDto> compareProductList(Long memberId);
+
+    public ProductDto productDetail(Long productId);
 }

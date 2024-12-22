@@ -31,6 +31,20 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     @Transactional
+    public ProductDto productDetail(Long productId) {
+        Product product = productJpaRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 상품 없음 id: " + productId));
+
+        product.incrementViewCount();
+        productJpaRepository.save(product);
+
+        ProductDto productDto = toProductDto(product);
+
+        return productDto;
+    }
+
+    @Override
+    @Transactional
     public void bookmark(Long productId, Long memberId) {
         Product product = productJpaRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 상품 없음 id: " + productId));
@@ -112,15 +126,14 @@ public class ProductServiceImpl implements ProductService{
 
         List<ProductDto> productDtos = compareJpaRepository.findAllByMemberId(member.getId())
                 .stream()
-                .map(this::toProductDto)
+                .map(compare -> toProductDto(compare.getProduct()))
                 .toList();
 
         return productDtos;
     }
 
     // ProductDto 변환
-    private ProductDto toProductDto(Compare compare) {
-        Product product = compare.getProduct();
+    private ProductDto toProductDto(Product product) {
         return ProductDto.builder()
                 .id(product.getId())
                 .productName(product.getProductName())

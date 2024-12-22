@@ -64,6 +64,14 @@ public class Product {
     public void decrementBookmarkCount() {
         this.bookmarkCount--;
     }
+
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
+
+    public void decrementViewCount() {
+        this.viewCount--;
+    }
 }
 
 
