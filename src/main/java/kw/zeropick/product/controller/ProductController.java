@@ -2,13 +2,16 @@ package kw.zeropick.product.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import kw.zeropick.common.LoginUser;
 import kw.zeropick.payload.ApiResponse;
+import kw.zeropick.product.dto.ProductDto;
 import kw.zeropick.product.service.ProductService;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -125,6 +128,25 @@ public class ProductController {
     }
 
 //    비교 상품 조회
-
-
+    @Operation(summary = "비교에 넣은 상품 보기", description = "비교에 넣은 상품 보기(로그인 기능 적용 전이므로 1번유저 고정)")
+    @GetMapping("/compare")
+    public ResponseEntity<ApiResponse> compare(){
+        Long memberId = LoginUser.get().getId();
+        try {
+            List<ProductDto> productDtos = productService.compareProductList(memberId);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .check(true)
+                            .information(productDtos)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information(e.getMessage())
+                            .build()
+            );
+        }
+    }
 }

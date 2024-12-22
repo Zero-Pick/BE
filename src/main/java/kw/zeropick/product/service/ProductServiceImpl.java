@@ -6,7 +6,9 @@ import kw.zeropick.member.domain.Member;
 import kw.zeropick.member.repository.MemberJpaRepository;
 import kw.zeropick.product.domain.Bookmark;
 import kw.zeropick.product.domain.Compare;
+import kw.zeropick.product.domain.Ingredient;
 import kw.zeropick.product.domain.Product;
+import kw.zeropick.product.dto.IngredientDto;
 import kw.zeropick.product.dto.ProductDto;
 import kw.zeropick.product.repository.BookmarkJpaRepository;
 import kw.zeropick.product.repository.CompareJpaRepository;
@@ -105,6 +107,52 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public List<ProductDto> compareProductList(Long memberId) {
-        return List.of();
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 유저 없음 id: " + memberId));
+
+        List<ProductDto> productDtos = compareJpaRepository.findAllByMemberId(member.getId())
+                .stream()
+                .map(this::toProductDto)
+                .toList();
+
+        return productDtos;
     }
+
+    // ProductDto 변환
+    private ProductDto toProductDto(Compare compare) {
+        Product product = compare.getProduct();
+        return ProductDto.builder()
+                .id(product.getId())
+                .productName(product.getProductName())
+                .brand(product.getBrand())
+                .category(product.getCategory())
+                .zeroSugar(product.getZeroSugar())
+                .zeroKcal(product.getZeroKcal())
+                .price(product.getPrice())
+                .starRate(product.getStarRate())
+                .viewCount(product.getViewCount())
+                .imageUrl(product.getImageUrl())
+                .bookmarkCount(product.getBookmarkCount())
+                .reviewCount(product.getReviewCount())
+                .ingredient(toIngredientDto(product.getIngredient()))
+                .build();
+    }
+
+    // IngredientDto 변환
+    private IngredientDto toIngredientDto(Ingredient ingredient) {
+        return IngredientDto.builder()
+                .kcal(ingredient.getKcal())
+                .carb(ingredient.getCarb())
+                .sweet(ingredient.getSweet())
+                .protein(ingredient.getProtein())
+                .fat(ingredient.getFat())
+                .transFat(ingredient.getTransFat())
+                .saturatedFat(ingredient.getSaturatedFat())
+                .natrium(ingredient.getNatrium())
+                .cholesterol(ingredient.getCholesterol())
+                .allulose(ingredient.getAllulose())
+                .erythritol(ingredient.getErythritol())
+                .build();
+    }
+
 }
