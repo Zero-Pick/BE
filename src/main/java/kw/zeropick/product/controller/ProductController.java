@@ -79,10 +79,50 @@ public class ProductController {
 
 
 //    상품 비교 넣기
-
+    @Operation(summary = "상품 비교 추가 하기", description = "상품 비교 추가 요청(로그인 기능 적용 전이므로 1번유저 고정)")
+    @PostMapping("/compare/{productId}")
+    public ResponseEntity<ApiResponse> productCompare(@PathVariable Long productId) {
+        Long memberId = LoginUser.get().getId();
+        try {
+            productService.compare(productId, memberId);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .check(true)
+                            .information("Product compare successfully")
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information(e.getMessage())
+                            .build()
+            );
+        }
+    }
 
 //    상품 비교 빼기
-
+    @Operation(summary = "상품 비교 취소", description = "상품 비교 취소 요청(로그인 기능 적용 전이므로 1번유저 고정)")
+    @DeleteMapping("/compare/{productId}")
+    public ResponseEntity<ApiResponse> productCompareUndo(@PathVariable Long productId) {
+        Long memberId = LoginUser.get().getId();
+        try {
+            productService.undoCompare(productId, memberId);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .check(true)
+                            .information("Product compare deleted successfully")
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information(e.getMessage())
+                            .build()
+            );
+        }
+    }
 
 //    비교 상품 조회
 
