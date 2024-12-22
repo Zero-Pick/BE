@@ -55,6 +55,15 @@ public class Product {
 
     //대표 식품명
     private String foodName;
+
+
+    public void incrementBookmarkCount() {
+        this.bookmarkCount++;
+    }
+
+    public void decrementBookmarkCount() {
+        this.bookmarkCount--;
+    }
 }
 
 
