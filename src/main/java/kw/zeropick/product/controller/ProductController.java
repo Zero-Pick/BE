@@ -8,6 +8,7 @@ import kw.zeropick.product.service.ProductService;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +29,7 @@ public class ProductController {
 
 
 //    로그인 필요
-//    상품 좋아요 하기
+//    상품 찜 하기
     @Operation(summary = "상품 찜 하기", description = "상품 좋아요 요청(로그인 기능 적용 전이므로 1번유저 고정)")
     @PostMapping("/bookmark/{productId}")
     public ResponseEntity<ApiResponse> productBookmark(@PathVariable Long productId) {
@@ -38,7 +39,7 @@ public class ProductController {
             return ResponseEntity.ok(
                     ApiResponse.builder()
                             .check(true)
-                            .information("Review liked successfully")
+                            .information("Product bookmark successfully")
                             .build()
             );
         } catch (Exception e) {
@@ -51,8 +52,28 @@ public class ProductController {
         }
     }
 
-//    상품 좋아요 취소
-
+//    상품 찜 취소
+    @Operation(summary = "상품 찜 취소", description = "상품 찜 취소 요청(로그인 기능 적용 전이므로 1번유저 고정)")
+    @DeleteMapping("/bookmark/{productId}")
+    public ResponseEntity<ApiResponse> productBookmarkUndo(@PathVariable Long productId) {
+        Long memberId = LoginUser.get().getId();
+        try {
+            productService.undoBookmark(productId, memberId);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .check(true)
+                            .information("Product bookmark deleted successfully")
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information(e.getMessage())
+                            .build()
+            );
+        }
+    }
 
 //    좋아요 상품 조회 (페이징 필)
 

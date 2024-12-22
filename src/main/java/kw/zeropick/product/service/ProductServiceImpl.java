@@ -49,7 +49,19 @@ public class ProductServiceImpl implements ProductService{
     @Override
     @Transactional
     public void undoBookmark(Long productId, Long memberId) {
+        Product product = productJpaRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 상품 없음 id: " + productId));
 
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 유저 없음 id: " + memberId));
+
+        Bookmark bookmark = bookmarkJpaRepository.findByProductAndMember(product, member)
+                .orElseThrow(() -> new EntityNotFoundException("해당 상품 찜 기록이 존재하지 않습니다."));
+
+        bookmarkJpaRepository.delete(bookmark);
+
+        product.decrementBookmarkCount();
+        productJpaRepository.save(product);
     }
 
 
