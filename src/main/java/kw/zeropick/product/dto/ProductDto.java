@@ -6,6 +6,7 @@ import kw.zeropick.product.domain.Category;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
@@ -36,4 +37,11 @@ public class ProductDto {
     private int reviewCount;
 
     private IngredientDto ingredient;
+
+//  좋아요 여부
+    @Setter
+    private Boolean bookmarked;
+//  비교함 여부
+    @Setter
+    private Boolean compared;
 }

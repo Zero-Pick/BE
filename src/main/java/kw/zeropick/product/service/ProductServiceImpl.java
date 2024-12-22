@@ -33,13 +33,14 @@ public class ProductServiceImpl implements ProductService{
     @Override
     @Transactional
     public ProductDto productDetail(Long productId) {
+//      찜 여부와 비교를 사용하려면 회원이여야 하는데 그럼 상세 정보 기능은 회원과 비회원으로 나누어야 하는가?
         Product product = productJpaRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 상품 없음 id: " + productId));
 
         product.incrementViewCount();
         productJpaRepository.save(product);
 
-        ProductDto productDto = toProductDto(product);
+        ProductDto productDto = toProductDto(product, null);
 
         return productDto;
     }
@@ -93,7 +94,7 @@ public class ProductServiceImpl implements ProductService{
         List<Bookmark> bookmarks = bookmarkJpaRepository.findAllByMember(member, pageable);
 
         List<ProductDto> productDtos = bookmarks.stream()
-                .map(bookmark -> toProductDto(bookmark.getProduct()))
+                .map(bookmark -> toProductDto(bookmark.getProduct(), member))
                 .toList();
 
         return productDtos;
@@ -112,7 +113,7 @@ public class ProductServiceImpl implements ProductService{
 
         List<ProductDto> productDtos = compareJpaRepository.findAllByMemberId(member.getId())
                 .stream()
-                .map(compare -> toProductDto(compare.getProduct()))
+                .map(compare -> toProductDto(compare.getProduct(), member))
                 .toList();
 
         if(productDtos.size()==3){
@@ -153,14 +154,17 @@ public class ProductServiceImpl implements ProductService{
 
         List<ProductDto> productDtos = compareJpaRepository.findAllByMemberId(member.getId())
                 .stream()
-                .map(compare -> toProductDto(compare.getProduct()))
+                .map(compare -> toProductDto(compare.getProduct(), member))
                 .toList();
 
         return productDtos;
     }
 
     // ProductDto 변환
-    private ProductDto toProductDto(Product product) {
+    private ProductDto toProductDto(Product product, Member member) {
+        boolean isBookmarked = member != null && bookmarkJpaRepository.existsByProductAndMember(product, member);
+        boolean isCompared = member != null && compareJpaRepository.existsByProductAndMember(product, member);
+
         return ProductDto.builder()
                 .id(product.getId())
                 .productName(product.getProductName())
@@ -174,9 +178,12 @@ public class ProductServiceImpl implements ProductService{
                 .imageUrl(product.getImageUrl())
                 .bookmarkCount(product.getBookmarkCount())
                 .reviewCount(product.getReviewCount())
+                .bookmarked(isBookmarked)
+                .compared(isCompared)
                 .ingredient(toIngredientDto(product.getIngredient()))
                 .build();
     }
+
 
     // IngredientDto 변환
     private IngredientDto toIngredientDto(Ingredient ingredient) {
