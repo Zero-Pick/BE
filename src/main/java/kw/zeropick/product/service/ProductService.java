@@ -9,7 +9,7 @@ public interface ProductService {
     public void compare(Long productId, Long memberId);
     public void undoCompare(Long productId, Long memberId);
 
-    public List<ProductDto> bookmarkProductList(Long memberId);
+    public List<ProductDto> bookmarkProductList(Long memberId, int page, int size);
     public List<ProductDto> compareProductList(Long memberId);
 
     public ProductDto productDetail(Long productId);

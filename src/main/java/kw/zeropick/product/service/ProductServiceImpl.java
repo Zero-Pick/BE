@@ -15,11 +15,12 @@ import kw.zeropick.product.repository.CompareJpaRepository;
 import kw.zeropick.product.repository.ProductJpaRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Builder
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService{
@@ -81,6 +82,24 @@ public class ProductServiceImpl implements ProductService{
         productJpaRepository.save(product);
     }
 
+    @Override
+    public List<ProductDto> bookmarkProductList(Long memberId, int page, int size) {
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 유저 없음 id: " + memberId));
+
+        // 페이징
+        Pageable pageable = PageRequest.of(page, size);
+
+        List<Bookmark> bookmarks = bookmarkJpaRepository.findAllByMember(member, pageable);
+
+        List<ProductDto> productDtos = bookmarks.stream()
+                .map(bookmark -> toProductDto(bookmark.getProduct()))
+                .toList();
+
+        return productDtos;
+    }
+
+
 
     @Override
     @Transactional
@@ -91,9 +110,20 @@ public class ProductServiceImpl implements ProductService{
         Member member = memberJpaRepository.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 유저 없음 id: " + memberId));
 
+        List<ProductDto> productDtos = compareJpaRepository.findAllByMemberId(member.getId())
+                .stream()
+                .map(compare -> toProductDto(compare.getProduct()))
+                .toList();
+
+        if(productDtos.size()==3){
+            throw new RuntimeException("비교 상품은 3개까지 넣을 수 있습니다.");
+        }
+
         if(compareJpaRepository.existsByProductAndMember(product, member)){
             throw new RuntimeException("이미 비교에 넣은 상품입니다.");
         }
+
+
 
         Compare compare = new Compare(member, product);
         compareJpaRepository.save(compare);
@@ -114,10 +144,7 @@ public class ProductServiceImpl implements ProductService{
         compareJpaRepository.delete(compare);
     }
 
-    @Override
-    public List<ProductDto> bookmarkProductList(Long memberId) {
-        return List.of();
-    }
+
 
     @Override
     public List<ProductDto> compareProductList(Long memberId) {

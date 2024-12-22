@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "product", description = "상품 관리 API")
@@ -99,6 +100,30 @@ public class ProductController {
     }
 
 //    좋아요 상품 조회 (페이징 필)
+    @Operation(summary = "상품 비교 추가 하기", description = "상품 비교 추가 요청(로그인 기능 적용 전이므로 1번유저 고정)")
+    @GetMapping("/bookmark")
+    public ResponseEntity<ApiResponse> bookmarkProductList(
+            @RequestParam(defaultValue = "0") int page, // 현재 페이지
+            @RequestParam(defaultValue = "10") int size // 크기
+    ) {
+        Long memberId = LoginUser.get().getId();
+        try {
+            List<ProductDto> productDtos = productService.bookmarkProductList(memberId, page, size);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .check(true)
+                            .information(productDtos)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information(e.getMessage())
+                            .build()
+            );
+        }
+    }
 
 
 //    상품 비교 넣기
