@@ -34,6 +34,16 @@ public class Product {
 
     private int price;
 
+    private Double starRate;
+
+    private int viewCount;
+
+    private String imageUrl;
+
+    private int bookmarkCount;
+
+    private int reviewCount;
+
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<Review> reviews = new ArrayList<>();
 
@@ -45,4 +55,37 @@ public class Product {
 
     //대표 식품명
     private String foodName;
+
+
+    public void incrementBookmarkCount() {
+        this.bookmarkCount++;
+    }
+
+    public void decrementBookmarkCount() {
+        this.bookmarkCount--;
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
+
+    public void decrementViewCount() {
+        this.viewCount--;
+    }
 }
+
+
+//ALTER TABLE product
+//ADD COLUMN star_rate DOUBLE DEFAULT 0.0 NOT NULL;
+//
+//ALTER TABLE product
+//ADD COLUMN view_count INT DEFAULT 0 NOT NULL;
+//
+//ALTER TABLE product
+//ADD COLUMN bookmark_count INT DEFAULT 0 NOT NULL;
+//
+//ALTER TABLE product
+//ADD COLUMN review_count INT DEFAULT 0 NOT NULL;
+//
+//ALTER TABLE product
+//ADD COLUMN image_url VARCHAR(255) DEFAULT NULL;
