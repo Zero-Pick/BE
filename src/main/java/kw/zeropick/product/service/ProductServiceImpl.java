@@ -10,11 +10,13 @@ import kw.zeropick.product.domain.Ingredient;
 import kw.zeropick.product.domain.Product;
 import kw.zeropick.product.dto.IngredientDto;
 import kw.zeropick.product.dto.ProductDto;
+import kw.zeropick.product.dto.request.ProductSearchRequest;
 import kw.zeropick.product.repository.BookmarkJpaRepository;
 import kw.zeropick.product.repository.CompareJpaRepository;
 import kw.zeropick.product.repository.ProductJpaRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,22 @@ public class ProductServiceImpl implements ProductService{
 
         return productDto;
     }
+
+    @Override
+    public Page<ProductDto> productSearch(Long memberId, int page, int size, ProductSearchRequest productSearchRequest) {
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 유저 없음 id: " + memberId));
+
+        // 페이징
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Product> products = productJpaRepository.searchProducts(productSearchRequest, pageable);
+
+        Page<ProductDto> productDtos = products.map(product -> toProductDto(product, member));
+
+        return productDtos;
+    }
+
 
     @Override
     @Transactional
@@ -84,21 +102,22 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    public List<ProductDto> bookmarkProductList(Long memberId, int page, int size) {
+    public Page<ProductDto> bookmarkProductList(Long memberId, int page, int size) {
         Member member = memberJpaRepository.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 유저 없음 id: " + memberId));
 
         // 페이징
         Pageable pageable = PageRequest.of(page, size);
 
-        List<Bookmark> bookmarks = bookmarkJpaRepository.findAllByMember(member, pageable);
+        // 페이징된 결과 받기
+        Page<Bookmark> bookmarkPage = bookmarkJpaRepository.findAllByMember(member, pageable);
 
-        List<ProductDto> productDtos = bookmarks.stream()
-                .map(bookmark -> toProductDto(bookmark.getProduct(), member))
-                .toList();
+        // Bookmark -> ProductDto로 변환
+        Page<ProductDto> productDtoPage = bookmarkPage.map(bookmark -> toProductDto(bookmark.getProduct(), member));
 
-        return productDtos;
+        return productDtoPage;
     }
+
 
 
 

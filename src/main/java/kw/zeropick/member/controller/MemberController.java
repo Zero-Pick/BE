@@ -62,26 +62,26 @@ public class MemberController {
         return ResponseEntity.ok(Boolean.TRUE);
     }
 
-    @Operation(
-            summary = "관심분야 조회",
-            description = "마이페이지에서 관심분야를 조회합니다.")
-    @GetMapping("/myPage/field")
-    public ResponseEntity<MemberFieldResponse> getField() {
-        Long loginUser = LoginUser.get().getId();
-        List<String> memberField = memberService.getMemberField(loginUser);
-        return ResponseEntity.ok().body(new MemberFieldResponse(memberField));
-    }
+//    @Operation(
+//            summary = "관심분야 조회",
+//            description = "마이페이지에서 관심분야를 조회합니다.")
+//    @GetMapping("/myPage/field")
+//    public ResponseEntity<MemberFieldResponse> getField() {
+//        Long loginUser = LoginUser.get().getId();
+//        List<String> memberField = memberService.getMemberField(loginUser);
+//        return ResponseEntity.ok().body(new MemberFieldResponse(memberField));
+//    }
 
-    @Operation(
-            summary = "관심분야 등록/수정",
-            description = "초기/마이페이지에서 관심분야를 등록/수정합니다.")
-    @PostMapping({"/field", "/myPage/field"})
-    public ResponseEntity<Boolean> postField(@RequestBody MemberFieldDto memberFieldDto) {
-
-        Long loginUserId = LoginUser.get().getId();
-        memberService.updateMemberField(loginUserId, memberFieldDto);
-        return ResponseEntity.ok(Boolean.TRUE);
-    }
+//    @Operation(
+//            summary = "관심분야 등록/수정",
+//            description = "초기/마이페이지에서 관심분야를 등록/수정합니다.")
+//    @PostMapping({"/field", "/myPage/field"})
+//    public ResponseEntity<Boolean> postField(@RequestBody MemberFieldDto memberFieldDto) {
+//
+//        Long loginUserId = LoginUser.get().getId();
+//        memberService.updateMemberField(loginUserId, memberFieldDto);
+//        return ResponseEntity.ok(Boolean.TRUE);
+//    }
 
 }
 

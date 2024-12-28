@@ -65,21 +65,21 @@ public class MemberService {
                 .build();
     }
 
-    public List<String> getMemberField(Long memberId){
-        Member member = this.getById(memberId);
-        return member.getField();
-    }
-
-    @Transactional
-    public Member updateMemberField(Long memberId, MemberFieldDto memberFieldDto){
-        Member member = this.getById(memberId);
-        member.changeFieldInfo(memberFieldDto.getField());
-
-        if(!member.getField().equals(memberFieldDto.getField())){
-            throw new FieldUpdateException();
-        }
-        return member;
-    }
+//    public List<String> getMemberField(Long memberId){
+//        Member member = this.getById(memberId);
+//        return member.getField();
+//    }
+//
+//    @Transactional
+//    public Member updateMemberField(Long memberId, MemberFieldDto memberFieldDto){
+//        Member member = this.getById(memberId);
+//        member.changeFieldInfo(memberFieldDto.getField());
+//
+//        if(!member.getField().equals(memberFieldDto.getField())){
+//            throw new FieldUpdateException();
+//        }
+//        return member;
+//    }
 
     @Transactional
     public Member updateMemberInfo(Long memberId, MemberInfoChangeDto memberInfoChangeDto){
