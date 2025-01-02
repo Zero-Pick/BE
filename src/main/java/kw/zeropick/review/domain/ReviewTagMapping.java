@@ -18,10 +18,12 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class ReviewTagMapping extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "mappging_id", updatable = false, nullable = false, unique = true)
+    @Column(name = "mapping_id", updatable = false, nullable = false, unique = true)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,3 +39,5 @@ public class ReviewTagMapping extends BaseEntity {
         this.reviewTag = reviewTag;
     }
 }
+
+

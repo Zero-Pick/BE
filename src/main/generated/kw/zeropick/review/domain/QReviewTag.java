@@ -30,13 +30,11 @@ public class QReviewTag extends EntityPathBase<ReviewTag> {
 
     public final EnumPath<PositiveTagEnum> positiveTagEnum = createEnum("positiveTagEnum", PositiveTagEnum.class);
 
-    public final NumberPath<Integer> productId = createNumber("productId", Integer.class);
+    public final NumberPath<Long> productId = createNumber("productId", Long.class);
 
     public final QReview review;
 
     public final NumberPath<Integer> tagCount = createNumber("tagCount", Integer.class);
-
-    public final StringPath tagTitle = createString("tagTitle");
 
     public QReviewTag(String variable) {
         this(ReviewTag.class, forVariable(variable), INITS);

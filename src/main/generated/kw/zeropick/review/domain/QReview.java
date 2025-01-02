@@ -37,7 +37,7 @@ public class QReview extends EntityPathBase<Review> {
 
     public final NumberPath<Long> rating = createNumber("rating", Long.class);
 
-    public final StringPath title = createString("title");
+    public final ListPath<ReviewTagMapping, QReviewTagMapping> tagMappings = this.<ReviewTagMapping, QReviewTagMapping>createList("tagMappings", ReviewTagMapping.class, QReviewTagMapping.class, PathInits.DIRECT2);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;

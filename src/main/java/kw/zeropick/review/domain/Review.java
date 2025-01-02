@@ -25,18 +25,26 @@ public class Review extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
     @NotNull
     private Long rating;
 
     @NotNull
-    private String title;
-
-    @NotNull
     private String content;
 
     @Convert(converter = StringListToStringConverter.class)
     private List<String> imageUrls = new ArrayList<>();
+
+    @OneToMany(mappedBy = "review", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewTagMapping> tagMappings = new ArrayList<>();
+
+    public List<ReviewTag> getTags() {
+        List<ReviewTag> tags = new ArrayList<>();
+        for (ReviewTagMapping mapping : tagMappings) {
+            tags.add(mapping.getReviewTag());
+        }
+        return tags;
+    }
 }

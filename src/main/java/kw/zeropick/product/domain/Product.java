@@ -76,6 +76,16 @@ public class Product {
     public void decrementViewCount() {
         this.viewCount--;
     }
+
+    public void setStarRate(Double starRate) {
+        this.starRate = starRate;
+    }
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+    public void setTags(List<PositiveTagEnum> tags) {
+        this.tags = tags;
+    }
 }
 
 

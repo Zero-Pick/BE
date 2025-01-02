@@ -1,10 +1,25 @@
 package kw.zeropick.review.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kw.zeropick.payload.ApiResponse;
+import kw.zeropick.product.dto.ProductDto;
+import kw.zeropick.review.domain.PositiveTagEnum;
+import kw.zeropick.review.domain.Review;
+import kw.zeropick.review.dto.request.ReviewRequestDto;
+import kw.zeropick.review.dto.response.ReviewResponse;
 import kw.zeropick.review.service.ReviewService;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "review", description = "리뷰 관련 API")
@@ -14,4 +29,36 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ReviewController {
     private final ReviewService reviewService;
+
+    @Operation(summary = "리뷰 등록", description = "새로운 리뷰를 등록합니다.")
+    @PostMapping("/create")
+    public ResponseEntity<String> createReview(@RequestBody ReviewRequestDto reviewRequestDto) {
+        reviewService.createReview(reviewRequestDto);
+        return ResponseEntity.ok("리뷰가 성공적으로 등록되었습니다.");
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse> getReviews(
+            @PathVariable Long productId,
+            @RequestParam(required = false) PositiveTagEnum positiveTag,
+            @RequestParam(required = false) String sort,
+            Pageable pageable
+    ) {
+        try {
+            Page<ReviewResponse> reviews = reviewService.getReviews(productId, positiveTag, sort, pageable);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .check(true)
+                            .information(reviews)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information(e.getMessage())
+                            .build()
+            );
+        }
+    }
 }
