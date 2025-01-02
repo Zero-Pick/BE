@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StringListToStringConverter implements AttributeConverter<List<String>, String> {
@@ -17,20 +18,22 @@ public class StringListToStringConverter implements AttributeConverter<List<Stri
     @Override
     public String convertToDatabaseColumn(List<String> attribute) {
         try {
-            return mapper.writeValueAsString(attribute);
+            return (attribute == null || attribute.isEmpty()) ? "[]" : mapper.writeValueAsString(attribute);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Error converting list to JSON string", e);
         }
     }
 
     @Override
     public List<String> convertToEntityAttribute(String dbData) {
+        if (dbData == null || dbData.isEmpty()) {
+            return new ArrayList<>(); // null 또는 빈 문자열일 경우 빈 리스트 반환
+        }
         TypeReference<List<String>> typeReference = new TypeReference<List<String>>() {};
         try {
             return mapper.readValue(dbData, typeReference);
         } catch (IOException e) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Error converting JSON string to list", e);
         }
     }
 }
-

@@ -31,15 +31,13 @@ public class QReview extends EntityPathBase<Review> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final ListPath<NegativeTag, QNegativeTag> negativeTag = this.<NegativeTag, QNegativeTag>createList("negativeTag", NegativeTag.class, QNegativeTag.class, PathInits.DIRECT2);
-
-    public final ListPath<PositiveTag, QPositiveTag> positiveTag = this.<PositiveTag, QPositiveTag>createList("positiveTag", PositiveTag.class, QPositiveTag.class, PathInits.DIRECT2);
+    public final ListPath<String, StringPath> imageUrls = this.<String, StringPath>createList("imageUrls", String.class, StringPath.class, PathInits.DIRECT2);
 
     public final kw.zeropick.product.domain.QProduct product;
 
     public final NumberPath<Long> rating = createNumber("rating", Long.class);
 
-    public final StringPath title = createString("title");
+    public final ListPath<ReviewTagMapping, QReviewTagMapping> tagMappings = this.<ReviewTagMapping, QReviewTagMapping>createList("tagMappings", ReviewTagMapping.class, QReviewTagMapping.class, PathInits.DIRECT2);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;

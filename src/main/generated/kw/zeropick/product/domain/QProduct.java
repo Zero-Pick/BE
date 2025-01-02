@@ -48,6 +48,8 @@ public class QProduct extends EntityPathBase<Product> {
 
     public final NumberPath<Double> starRate = createNumber("starRate", Double.class);
 
+    public final ListPath<kw.zeropick.review.domain.PositiveTagEnum, EnumPath<kw.zeropick.review.domain.PositiveTagEnum>> tags = this.<kw.zeropick.review.domain.PositiveTagEnum, EnumPath<kw.zeropick.review.domain.PositiveTagEnum>>createList("tags", kw.zeropick.review.domain.PositiveTagEnum.class, EnumPath.class, PathInits.DIRECT2);
+
     public final NumberPath<Integer> viewCount = createNumber("viewCount", Integer.class);
 
     public final BooleanPath zeroKcal = createBoolean("zeroKcal");
