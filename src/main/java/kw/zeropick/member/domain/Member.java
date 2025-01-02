@@ -36,8 +36,8 @@ public class Member {
     private String password;
 
 
-    @Convert(converter = StringListToStringConverter.class)
-    private List<String> field;
+//    @Convert(converter = StringListToStringConverter.class)
+//    private List<String> field;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -60,9 +60,9 @@ public class Member {
         this.userState = userState;
     }
 
-    public void changeFieldInfo(List<String> field){
-        this.field = field;
-    }
+//    public void changeFieldInfo(List<String> field){
+//        this.field = field;
+//    }
 
     public void changeMemberInfo(String phoneNumber, LocalDate birthDate, MarketingAgree marketingAgree){
         this.phoneNumber = phoneNumber;
