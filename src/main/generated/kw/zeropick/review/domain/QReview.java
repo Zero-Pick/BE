@@ -31,9 +31,7 @@ public class QReview extends EntityPathBase<Review> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final ListPath<NegativeTag, QNegativeTag> negativeTag = this.<NegativeTag, QNegativeTag>createList("negativeTag", NegativeTag.class, QNegativeTag.class, PathInits.DIRECT2);
-
-    public final ListPath<PositiveTag, QPositiveTag> positiveTag = this.<PositiveTag, QPositiveTag>createList("positiveTag", PositiveTag.class, QPositiveTag.class, PathInits.DIRECT2);
+    public final ListPath<String, StringPath> imageUrls = this.<String, StringPath>createList("imageUrls", String.class, StringPath.class, PathInits.DIRECT2);
 
     public final kw.zeropick.product.domain.QProduct product;
 
