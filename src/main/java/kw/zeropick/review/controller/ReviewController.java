@@ -42,6 +42,18 @@ public class ReviewController {
         return ResponseEntity.ok("리뷰가 성공적으로 등록되었습니다.");
     }
 
+    @Operation(summary = "리뷰 수정", description = "리뷰를 수정합니다.")
+    @PostMapping("/update/{reviewId}")
+    public ResponseEntity<String> updateReview(
+            @PathVariable Long reviewId,
+            @RequestPart(value = "review") ReviewRequestDto reviewRequestDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+        reviewService.updateReview(reviewId, reviewRequestDto);
+        return ResponseEntity.ok("리뷰가 성공적으로 수정되었습니다.");
+    }
+
+
+
     @Operation(summary = "리뷰 조회", description = "상품에 대한 리뷰를 조회합니다.")
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse> getReviews(

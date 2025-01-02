@@ -55,8 +55,8 @@ public class S3Util {
 		objectMetadata.setContentType(file.getContentType());
 
 		try (InputStream inputStream = file.getInputStream()) {
-			s3Client.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
-				.withCannedAcl(CannedAccessControlList.PublicRead));
+			s3Client.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata));
+//				.withCannedAcl(CannedAccessControlList.PublicRead));
 			imageUrl = s3Client.getUrl(bucket, fileName).toString();
 		} catch (IOException e) {
 			throw new IllegalArgumentException("IMAGE_UPLOAD_ERROR");
