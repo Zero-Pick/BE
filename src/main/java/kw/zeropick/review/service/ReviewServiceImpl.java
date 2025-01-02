@@ -1,6 +1,7 @@
 package kw.zeropick.review.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,11 +16,13 @@ import kw.zeropick.review.dto.response.ReviewResponse;
 import kw.zeropick.review.repository.ReviewJpaRepository;
 import kw.zeropick.review.repository.ReviewTagJpaRepository;
 import kw.zeropick.review.repository.ReviewTagMappingJpaRepository;
+import kw.zeropick.util.S3Util;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,11 +33,14 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewTagJpaRepository reviewTagRepository;
     private final ReviewTagMappingJpaRepository reviewTagMappingRepository;
 
+    private final S3Util s3Util;
+
     public Page<ReviewResponse> getReviews(Long productId, PositiveTagEnum positiveTag, String sort, Pageable pageable) {
         return reviewRepository.findReviewsByProductId(productId, positiveTag, sort, pageable);
     }
 
-    public void createReview(ReviewRequestDto reviewRequestDto) {
+    @Transactional
+    public void createReview(ReviewRequestDto reviewRequestDto, List<MultipartFile> files) {
         Product product = productRepository.findById(reviewRequestDto.getProductId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 상품을 찾을 수 없습니다."));
 
@@ -43,11 +49,24 @@ public class ReviewServiceImpl implements ReviewService {
         product.setReviewCount(product.getReviewCount() + 1);
         productRepository.save(product);
 
+        List<String> images = new ArrayList<>();
+
+        // 이미지 파일 처리 및 S3 업로드
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file != null && !file.isEmpty()) {
+                    String imageUrl = s3Util.upload(file);
+                    System.out.println(imageUrl);
+                    images.add(imageUrl);
+                }
+            }
+        }
+
         Review review = Review.builder()
                 .product(product)
                 .rating(reviewRequestDto.getRating())
                 .content(reviewRequestDto.getContent())
-                .imageUrls(reviewRequestDto.getImageUrls())
+                .imageUrls(images)
                 .build();
         reviewRepository.save(review);
 
