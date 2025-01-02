@@ -1,4 +1,4 @@
-package kw.zeropick;
+package kw.zeropick.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
