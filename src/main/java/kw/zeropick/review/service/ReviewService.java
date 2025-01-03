@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ReviewService {
-    public Page<ReviewResponse> getReviews(Long productId, PositiveTagEnum positiveTag, String sort, Pageable pageable);
-    public void createReview(ReviewRequestDto reviewRequestDto, List<MultipartFile> files);
+    Page<ReviewResponse> getReviews(Long productId, PositiveTagEnum positiveTag, String sort, Pageable pageable);
+    void createReview(ReviewRequestDto reviewRequestDto, List<MultipartFile> files);
+    void updateReview(Long reviewId, ReviewRequestDto reviewRequestDto);
 }

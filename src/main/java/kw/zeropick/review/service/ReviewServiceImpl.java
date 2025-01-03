@@ -39,6 +39,7 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewRepository.findReviewsByProductId(productId, positiveTag, sort, pageable);
     }
 
+    @Override
     @Transactional
     public void createReview(ReviewRequestDto reviewRequestDto, List<MultipartFile> files) {
         Product product = productRepository.findById(reviewRequestDto.getProductId())
@@ -84,7 +85,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .positiveNegative(true)
                         .build();
             }
-            reviewTag.setReview(review);
+//            reviewTag.setReview(review);
             reviewTagRepository.save(reviewTag);
             reviewTagMappingRepository.save(new ReviewTagMapping(review, reviewTag));
         });
@@ -103,7 +104,7 @@ public class ReviewServiceImpl implements ReviewService {
                         .positiveNegative(false)
                         .build();
             }
-            reviewTag.setReview(review);
+//            reviewTag.setReview(review);
             reviewTagRepository.save(reviewTag);
             reviewTagMappingRepository.save(new ReviewTagMapping(review, reviewTag));
         });
@@ -118,4 +119,89 @@ public class ReviewServiceImpl implements ReviewService {
         product.setTags(topTags);
         productRepository.save(product);
     }
+
+    @Override
+    @Transactional
+    public void updateReview(Long reviewId, ReviewRequestDto reviewRequestDto) {
+        Review existingReview = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
+
+        Product product = existingReview.getProduct();
+
+        // 기존 평점 제거 후 새로운 평점 반영
+        double newStarRate = ((product.getStarRate() * product.getReviewCount()) - existingReview.getRating() + reviewRequestDto.getRating()) / product.getReviewCount();
+        product.setStarRate(newStarRate);
+        productRepository.save(product);
+
+        // 리뷰 정보 업데이트
+        existingReview.setRating(reviewRequestDto.getRating());
+        existingReview.setContent(reviewRequestDto.getContent());
+        existingReview.setImageUrls(reviewRequestDto.getImageUrls());
+        reviewRepository.save(existingReview);
+
+        // 기존 태그 매핑 삭제
+        List<ReviewTagMapping> existingMappings = reviewTagMappingRepository.findAllByReview(existingReview);
+
+        reviewTagMappingRepository.deleteAllByReview(existingReview);
+
+        for (ReviewTagMapping mapping : existingMappings) {
+            ReviewTag reviewTag = mapping.getReviewTag();
+            reviewTag.setTagCount(reviewTag.getTagCount() - 1); // 기존 태그 카운트 감소
+            if (reviewTag.getTagCount() <= 0) {
+                reviewTagRepository.delete(reviewTag); // 태그 카운트가 0이 되면 삭제
+            } else {
+                reviewTagRepository.save(reviewTag);
+            }
+        }
+
+        // 새로운 태그 추가 및 매핑 저장
+        reviewRequestDto.getPositiveTags().forEach(tag -> {
+            Optional<ReviewTag> existingTag = reviewTagRepository.findByProductIdAndTag(product.getId(), tag, null);
+            ReviewTag reviewTag;
+            if (existingTag.isPresent()) {
+                reviewTag = existingTag.get();
+                reviewTag.setTagCount(reviewTag.getTagCount() + 1); // 기존 태그 카운트 증가
+            } else {
+                reviewTag = ReviewTag.builder()
+                        .productId(product.getId())
+                        .positiveTagEnum(tag)
+                        .tagCount(1)
+                        .positiveNegative(true)
+                        .build();
+            }
+            reviewTagRepository.save(reviewTag);
+            reviewTagMappingRepository.save(new ReviewTagMapping(existingReview, reviewTag));
+        });
+
+        reviewRequestDto.getNegativeTags().forEach(tag -> {
+            Optional<ReviewTag> existingTag = reviewTagRepository.findByProductIdAndTag(product.getId(), null, tag);
+            ReviewTag reviewTag;
+            if (existingTag.isPresent()) {
+                reviewTag = existingTag.get();
+                reviewTag.setTagCount(reviewTag.getTagCount() + 1); // 기존 태그 카운트 증가
+            } else {
+                reviewTag = ReviewTag.builder()
+                        .productId(product.getId())
+                        .negativeTagEnum(tag)
+                        .tagCount(1)
+                        .positiveNegative(false)
+                        .build();
+            }
+            reviewTagRepository.save(reviewTag);
+            reviewTagMappingRepository.save(new ReviewTagMapping(existingReview, reviewTag));
+        });
+
+        // 새로운 topTags 계산
+        List<PositiveTagEnum> topTags = reviewTagRepository.findAll().stream()
+                .filter(tag -> tag.getPositiveNegative() && tag.getProductId() == product.getId())
+                .sorted((t1, t2) -> t2.getTagCount().compareTo(t1.getTagCount()))
+                .limit(3)
+                .map(ReviewTag::getPositiveTagEnum)
+                .collect(Collectors.toList());
+
+        product.setTags(topTags);
+        productRepository.save(product);
+    }
+
+
 }

@@ -47,4 +47,18 @@ public class Review extends BaseEntity {
         }
         return tags;
     }
+
+    public void setRating(Long rating) {
+        this.rating = rating;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
+    }
+
+
 }

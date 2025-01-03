@@ -39,14 +39,10 @@ public class ReviewTag {
     @Column(nullable = false)
     private Long productId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
-    private Review review;
 
     public void setTagCount(Integer tagCount) {
         this.tagCount = tagCount;
     }
 
-    public void setReview(Review review) {this.review = review;}
 }
 
