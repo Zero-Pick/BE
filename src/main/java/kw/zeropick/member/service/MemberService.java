@@ -3,6 +3,9 @@ package kw.zeropick.member.service;
 import kw.zeropick.common.domain.exception.ResourceNotFoundException;
 import kw.zeropick.member.controller.response.MemberInfoResponse;
 import kw.zeropick.member.domain.Member;
+import kw.zeropick.member.domain.Role;
+import kw.zeropick.member.domain.SocialType;
+import kw.zeropick.member.domain.State;
 import kw.zeropick.member.domain.exception.ConfirmPasswordMismatchException;
 import kw.zeropick.member.domain.exception.FieldUpdateException;
 import kw.zeropick.member.domain.exception.InvalidMemberDataException;
@@ -14,7 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(readOnly = true)
@@ -89,6 +94,39 @@ public class MemberService {
             throw new InvalidMemberDataException();
         }
         return member;
+    }
+
+    @Transactional
+    public Member createUserWithKakaoId(String kakaoId, Map<String, Object> kakaoUserInfo) {
+        Map<String, Object> kakaoAccount = (Map<String, Object>) kakaoUserInfo.get("kakao_account");
+        String email = (String) kakaoAccount.get("email");
+        String name = (String) kakaoAccount.get("name");
+        String phoneNumber = (String) kakaoAccount.get("phone_number");
+        String birthday = (String) kakaoAccount.get("birthday");
+        String birthyear = (String) kakaoAccount.get("birthyear");
+
+        LocalDate birthDate = null;
+        if (birthday != null && !birthday.isEmpty()) {
+            int year = (birthyear != null && !birthyear.isEmpty())
+                    ? Integer.parseInt(birthyear)
+                    : LocalDate.now().getYear();
+            int month = Integer.parseInt(birthday.substring(0, 2));
+            int day = Integer.parseInt(birthday.substring(2, 4));
+            birthDate = LocalDate.of(year, month, day);
+        }
+
+        Member newMember = new Member();
+        newMember.setSocialId(kakaoId);
+        newMember.setEmail(email);
+        newMember.setName(name);
+        newMember.setPhoneNumber(phoneNumber);
+        newMember.setBirthDate(birthDate);
+        newMember.setRole(Role.ROLE_USER);
+        newMember.setSocialType(SocialType.KAKAO);
+        newMember.setUserState(State.ACTIVATE);
+
+
+        return memberJpaRepository.save(newMember);
     }
 
 

@@ -51,7 +51,6 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
 	implementation 'jakarta.servlet:jakarta.servlet-api'
 
-
 	// Amazon S3
 	implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.1000')
 	implementation 'com.amazonaws:aws-java-sdk-s3'
@@ -62,6 +61,18 @@ dependencies {
 	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
 	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+	// OAuth2
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// Spring-security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	testImplementation 'org.springframework.security:spring-security-test'
+
+	// Jwt
+	implementation group:'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+	implementation group:'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+	implementation group:'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
 }
 
 // Querydsl 설정부
