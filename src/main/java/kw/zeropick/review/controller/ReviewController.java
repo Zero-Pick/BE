@@ -2,6 +2,7 @@ package kw.zeropick.review.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import kw.zeropick.payload.ApiResponse;
 import kw.zeropick.product.dto.ProductDto;
 import kw.zeropick.review.domain.PositiveTagEnum;
@@ -20,7 +21,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "review", description = "리뷰 관련 API")
 @Builder
@@ -32,11 +35,26 @@ public class ReviewController {
 
     @Operation(summary = "리뷰 등록", description = "새로운 리뷰를 등록합니다.")
     @PostMapping("/create")
-    public ResponseEntity<String> createReview(@RequestBody ReviewRequestDto reviewRequestDto) {
-        reviewService.createReview(reviewRequestDto);
+    public ResponseEntity<String> createReview(
+            @RequestPart(value = "review") ReviewRequestDto reviewRequestDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+        reviewService.createReview(reviewRequestDto, files);
         return ResponseEntity.ok("리뷰가 성공적으로 등록되었습니다.");
     }
 
+    @Operation(summary = "리뷰 수정", description = "리뷰를 수정합니다.")
+    @PostMapping("/update/{reviewId}")
+    public ResponseEntity<String> updateReview(
+            @PathVariable Long reviewId,
+            @RequestPart(value = "review") ReviewRequestDto reviewRequestDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+        reviewService.updateReview(reviewId, reviewRequestDto);
+        return ResponseEntity.ok("리뷰가 성공적으로 수정되었습니다.");
+    }
+
+
+
+    @Operation(summary = "리뷰 조회", description = "상품에 대한 리뷰를 조회합니다.")
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse> getReviews(
             @PathVariable Long productId,
