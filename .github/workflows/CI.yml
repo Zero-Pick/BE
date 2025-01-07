@@ -58,6 +58,11 @@ jobs:
           spring.servlet.multipart.max-file-size=10MB
           spring.servlet.multipart.max-request-size=10MB
           
+          # jwt
+          spring.jwt.secret=ThisIsJWTSecretKeyForWithUDoNotUseThisStatement
+  
+          redirect-url-suffix=/member/home
+          
           # Kakao OAuth2 Configuration
           spring.security.oauth2.client.registration.kakao.client-name=${{ secrets.KAKAO_CLIENT_NAME }}"
           spring.security.oauth2.client.registration.kakao.client-id=${{ secrets.KAKAO_CLIENT_ID }}"
