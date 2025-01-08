@@ -13,4 +13,5 @@ public interface ReviewService {
     Page<ReviewResponse> getReviews(Long productId, PositiveTagEnum positiveTag, String sort, Pageable pageable);
     void createReview(ReviewRequestDto reviewRequestDto, List<MultipartFile> files);
     void updateReview(Long reviewId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files);
+    void deleteReview(Long reviewId);
 }
