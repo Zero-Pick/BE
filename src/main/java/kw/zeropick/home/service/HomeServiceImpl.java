@@ -62,7 +62,7 @@ public class HomeServiceImpl implements HomeService {
     
     @Override
     @Transactional
-    private ProductBestResponse toProductBestResponse (Product product){
+    public ProductBestResponse toProductBestResponse (Product product){
         Long memberId = null;
         try {
             memberId = LoginUser.get().getId(); // 로그인 사용자 정보 가져오기

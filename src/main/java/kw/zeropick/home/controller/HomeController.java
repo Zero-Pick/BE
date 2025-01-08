@@ -8,6 +8,7 @@ import kw.zeropick.home.dto.response.HomeResponse;
 import kw.zeropick.home.dto.response.ProductBestResponse;
 import kw.zeropick.home.service.HomeService;
 import kw.zeropick.payload.ApiResponse;
+import kw.zeropick.product.domain.Category;
 import kw.zeropick.product.dto.ProductDto;
 import kw.zeropick.product.service.ProductService;
 import lombok.Builder;
