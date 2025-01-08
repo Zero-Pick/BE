@@ -41,7 +41,7 @@ public class ReviewController {
             @PathVariable Long reviewId,
             @RequestPart(value = "review") ReviewRequestDto reviewRequestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        reviewService.updateReview(reviewId, reviewRequestDto);
+        reviewService.updateReview(reviewId, reviewRequestDto, files);
         return ResponseEntity.ok("리뷰가 성공적으로 수정되었습니다.");
     }
 

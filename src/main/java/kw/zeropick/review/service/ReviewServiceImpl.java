@@ -124,7 +124,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public void updateReview(Long reviewId, ReviewRequestDto reviewRequestDto) {
+    public void updateReview(Long reviewId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files) {
         Review existingReview = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
 
@@ -138,7 +138,24 @@ public class ReviewServiceImpl implements ReviewService {
         // 리뷰 정보 업데이트
         existingReview.setRating(reviewRequestDto.getRating());
         existingReview.setContent(reviewRequestDto.getContent());
-        existingReview.setImageUrls(reviewRequestDto.getImageUrls());
+        List<String> oldImageUrls = existingReview.getImageUrls();
+        if(!oldImageUrls.isEmpty()) {
+            for (String imageUrl : oldImageUrls) {
+                s3Util.deleteFile(imageUrl);
+            }
+        }
+        List<String> newImageUrls = new ArrayList<>();
+        // 이미지 파일 처리 및 S3 업로드
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file != null && !file.isEmpty()) {
+                    String imageUrl = s3Util.upload(file);
+                    System.out.println(imageUrl);
+                    newImageUrls.add(imageUrl);
+                }
+            }
+        }
+        existingReview.setImageUrls(newImageUrls);
         reviewRepository.save(existingReview);
 
         // 기존 태그 매핑 삭제
