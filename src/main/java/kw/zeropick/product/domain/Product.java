@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import kw.zeropick.common.converter.StringListToStringConverter;
+import kw.zeropick.common.domain.BaseEntity;
 import kw.zeropick.review.domain.PositiveTagEnum;
 import kw.zeropick.review.domain.Review;
 import lombok.*;
@@ -16,7 +17,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class Product extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id")
