@@ -6,4 +6,5 @@ import kw.zeropick.product.domain.Category;
 
 public interface HomeService {
     List<ProductBestResponse> categoryBest(Long memberId, Category category);
+    List<ProductBestResponse> getTopPopularityProducts(int limit, String token);
 }
