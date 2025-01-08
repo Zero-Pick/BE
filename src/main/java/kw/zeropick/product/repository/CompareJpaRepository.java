@@ -11,4 +11,6 @@ public interface CompareJpaRepository extends JpaRepository<Compare, Long> {
     Boolean existsByProductAndMember(Product product, Member member);
     Optional<Compare> findByProductAndMember(Product product, Member member);
     List<Compare> findAllByMemberId(Long memberId);
+    boolean existsByProductIdAndMemberId(Long productId, Long memberId);
+
 }
