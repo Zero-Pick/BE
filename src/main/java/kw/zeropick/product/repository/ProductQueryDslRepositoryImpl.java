@@ -8,6 +8,7 @@ import java.util.List;
 import kw.zeropick.product.domain.Product;
 import kw.zeropick.product.domain.QProduct;
 import kw.zeropick.product.dto.request.ProductSearchRequest;
+import kw.zeropick.review.domain.PositiveTagEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -52,6 +53,18 @@ public class ProductQueryDslRepositoryImpl implements ProductQueryDslRepository 
             builder.and(product.ingredient.allulose.isNull());
         }
 
+        // 태그 조건 추가
+        if (request.getTags() != null && !request.getTags().isEmpty()) {
+            for (PositiveTagEnum tag : request.getTags()) {
+                builder.and(product.tags.contains(tag));
+            }
+        }
+
+        // 카테고리 조건 추가
+        if (request.getCategory() != null) {
+            builder.and(product.category.eq(request.getCategory()));
+        }
+
         // 쿼리 실행
         QueryResults<Product> results = queryFactory
                 .selectFrom(product)
@@ -65,5 +78,6 @@ public class ProductQueryDslRepositoryImpl implements ProductQueryDslRepository 
         long total = results.getTotal();
         return new PageImpl<>(products, pageable, total);
     }
+
 
 }
