@@ -13,5 +13,6 @@ public interface BookmarkJpaRepository extends JpaRepository<Bookmark, Long> {
     Boolean existsByProductAndMember(Product product, Member member);
     Optional<Bookmark> findByProductAndMember(Product product, Member member);
     Page<Bookmark> findAllByMember(Member member, Pageable pageable);
+    boolean existsByProductIdAndMemberId(Long productId, Long memberId);
 
 }

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import kw.zeropick.common.domain.exception.ResourceNotFoundException;
 import kw.zeropick.product.domain.Product;
 import kw.zeropick.product.repository.ProductJpaRepository;
 import kw.zeropick.review.domain.PositiveTagEnum;
@@ -122,7 +124,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public void updateReview(Long reviewId, ReviewRequestDto reviewRequestDto) {
+    public void updateReview(Long reviewId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files) {
         Review existingReview = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
 
@@ -136,7 +138,24 @@ public class ReviewServiceImpl implements ReviewService {
         // 리뷰 정보 업데이트
         existingReview.setRating(reviewRequestDto.getRating());
         existingReview.setContent(reviewRequestDto.getContent());
-        existingReview.setImageUrls(reviewRequestDto.getImageUrls());
+        List<String> oldImageUrls = existingReview.getImageUrls();
+        if(!oldImageUrls.isEmpty()) {
+            for (String imageUrl : oldImageUrls) {
+                s3Util.deleteFile(imageUrl);
+            }
+        }
+        List<String> newImageUrls = new ArrayList<>();
+        // 이미지 파일 처리 및 S3 업로드
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file != null && !file.isEmpty()) {
+                    String imageUrl = s3Util.upload(file);
+                    System.out.println(imageUrl);
+                    newImageUrls.add(imageUrl);
+                }
+            }
+        }
+        existingReview.setImageUrls(newImageUrls);
         reviewRepository.save(existingReview);
 
         // 기존 태그 매핑 삭제
@@ -194,6 +213,59 @@ public class ReviewServiceImpl implements ReviewService {
         // 새로운 topTags 계산
         List<PositiveTagEnum> topTags = reviewTagRepository.findAll().stream()
                 .filter(tag -> tag.getPositiveNegative() && tag.getProductId() == product.getId())
+                .sorted((t1, t2) -> t2.getTagCount().compareTo(t1.getTagCount()))
+                .limit(3)
+                .map(ReviewTag::getPositiveTagEnum)
+                .collect(Collectors.toList());
+
+        product.setTags(topTags);
+        productRepository.save(product);
+    }
+
+    @Override
+    @Transactional
+    public void deleteReview(Long reviewId) {
+        // 삭제할 리뷰 조회
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
+
+        // 이미지 삭제 추가
+        List<String> oldImageUrls = review.getImageUrls();
+        if(!oldImageUrls.isEmpty()) {
+            for (String imageUrl : oldImageUrls) {
+                s3Util.deleteFile(imageUrl);
+            }
+        }
+
+        Product product = review.getProduct();
+
+        // 리뷰의 평점을 상품에서 제거
+        double newStarRate = ((product.getStarRate() * product.getReviewCount()) - review.getRating()) / (product.getReviewCount() - 1);
+        product.setStarRate(product.getReviewCount() > 1 ? newStarRate : 0.0); // 리뷰가 하나일 경우 별점 0으로 설정
+        product.setReviewCount(product.getReviewCount() - 1);
+        productRepository.save(product);
+
+        // 태그 매핑 제거
+        List<ReviewTagMapping> mappings = reviewTagMappingRepository.findAllByReview(review);
+
+        reviewTagMappingRepository.deleteAllByReview(review);
+
+        for (ReviewTagMapping mapping : mappings) {
+            ReviewTag reviewTag = mapping.getReviewTag();
+            reviewTag.setTagCount(reviewTag.getTagCount() - 1);
+            if (reviewTag.getTagCount() <= 0) {
+                reviewTagRepository.delete(reviewTag); // 태그 카운트가 0이면 삭제
+            } else {
+                reviewTagRepository.save(reviewTag);
+            }
+        }
+
+        // 리뷰 삭제
+        reviewRepository.delete(review);
+
+        // topTags 업데이트
+        List<PositiveTagEnum> topTags = reviewTagRepository.findAll().stream()
+                .filter(tag -> tag.getPositiveNegative() && tag.getProductId() == product.getId() && tag.getTagCount() > 0)
                 .sorted((t1, t2) -> t2.getTagCount().compareTo(t1.getTagCount()))
                 .limit(3)
                 .map(ReviewTag::getPositiveTagEnum)

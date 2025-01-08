@@ -221,4 +221,25 @@ public class ProductServiceImpl implements ProductService{
                 .build();
     }
 
+    @Override
+    @Transactional
+    public boolean isBookmarkedByUser(Long productId, Long memberId) {
+        return bookmarkJpaRepository.existsByProductIdAndMemberId(productId, memberId);
+    }
+
+    @Override
+    @Transactional
+    public boolean isComparedByUser(Long productId, Long memberId) {
+        return compareJpaRepository.existsByProductIdAndMemberId(productId, memberId);
+    }
+
+    @Override
+    @Transactional
+    public List<Product> findTopProductsByPopularity(int limit) {
+        return productJpaRepository.findTopProductsByPopularity()
+                .stream()
+                .limit(limit)
+                .toList();
+    }
+
 }

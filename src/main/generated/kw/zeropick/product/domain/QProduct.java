@@ -22,6 +22,8 @@ public class QProduct extends EntityPathBase<Product> {
 
     public static final QProduct product = new QProduct("product");
 
+    public final kw.zeropick.common.domain.QBaseEntity _super = new kw.zeropick.common.domain.QBaseEntity(this);
+
     public final StringPath bigCategory = createString("bigCategory");
 
     public final NumberPath<Integer> bookmarkCount = createNumber("bookmarkCount", Integer.class);
@@ -30,6 +32,9 @@ public class QProduct extends EntityPathBase<Product> {
 
     public final EnumPath<Category> category = createEnum("category", Category.class);
 
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+
     public final StringPath foodName = createString("foodName");
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
@@ -37,6 +42,8 @@ public class QProduct extends EntityPathBase<Product> {
     public final StringPath imageUrl = createString("imageUrl");
 
     public final QIngredient ingredient;
+
+    public final NumberPath<Integer> popularity = createNumber("popularity", Integer.class);
 
     public final NumberPath<Integer> price = createNumber("price", Integer.class);
 
@@ -49,6 +56,9 @@ public class QProduct extends EntityPathBase<Product> {
     public final NumberPath<Double> starRate = createNumber("starRate", Double.class);
 
     public final ListPath<kw.zeropick.review.domain.PositiveTagEnum, EnumPath<kw.zeropick.review.domain.PositiveTagEnum>> tags = this.<kw.zeropick.review.domain.PositiveTagEnum, EnumPath<kw.zeropick.review.domain.PositiveTagEnum>>createList("tags", kw.zeropick.review.domain.PositiveTagEnum.class, EnumPath.class, PathInits.DIRECT2);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
 
     public final NumberPath<Integer> viewCount = createNumber("viewCount", Integer.class);
 

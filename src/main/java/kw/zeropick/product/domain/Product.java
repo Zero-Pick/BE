@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import kw.zeropick.common.converter.StringListToStringConverter;
+import kw.zeropick.common.domain.BaseEntity;
 import kw.zeropick.review.domain.PositiveTagEnum;
 import kw.zeropick.review.domain.Review;
 import lombok.*;
@@ -16,7 +17,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class Product extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id")
@@ -60,17 +61,22 @@ public class Product {
     //대표 식품명
     private String foodName;
 
+    // 인기순
+    private int popularity;
 
     public void incrementBookmarkCount() {
         this.bookmarkCount++;
+        this.setPopularity();
     }
 
     public void decrementBookmarkCount() {
         this.bookmarkCount--;
+        this.setPopularity();
     }
 
     public void incrementViewCount() {
         this.viewCount++;
+        this.setPopularity();
     }
 
     public void decrementViewCount() {
@@ -78,14 +84,24 @@ public class Product {
     }
 
     public void setStarRate(Double starRate) {
-        this.starRate = starRate;
+        this.starRate = Math.round(starRate * 100) / 100.0;
+        this.setPopularity();
     }
     public void setReviewCount(int reviewCount) {
         this.reviewCount = reviewCount;
+        this.setPopularity();
     }
     public void setTags(List<PositiveTagEnum> tags) {
         this.tags = tags;
     }
+
+    public void setPopularity() {
+        int starRateScore = this.starRate != null ? (int) Math.round(this.starRate * 20 * 350) : 0;
+        this.popularity = this.viewCount * 150 + this.bookmarkCount * 250 + this.reviewCount * 250 + starRateScore;
+    }
+
+
+
 }
 
 

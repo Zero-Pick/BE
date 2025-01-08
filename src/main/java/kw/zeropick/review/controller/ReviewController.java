@@ -15,14 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "review", description = "리뷰 관련 API")
@@ -34,7 +27,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @Operation(summary = "리뷰 등록", description = "새로운 리뷰를 등록합니다.")
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<String> createReview(
             @RequestPart(value = "review") ReviewRequestDto reviewRequestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
@@ -43,16 +36,21 @@ public class ReviewController {
     }
 
     @Operation(summary = "리뷰 수정", description = "리뷰를 수정합니다.")
-    @PostMapping("/update/{reviewId}")
+    @PatchMapping("/{reviewId}")
     public ResponseEntity<String> updateReview(
             @PathVariable Long reviewId,
             @RequestPart(value = "review") ReviewRequestDto reviewRequestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        reviewService.updateReview(reviewId, reviewRequestDto);
+        reviewService.updateReview(reviewId, reviewRequestDto, files);
         return ResponseEntity.ok("리뷰가 성공적으로 수정되었습니다.");
     }
 
-
+    @Operation(summary = "리뷰 삭제", description = "리뷰를 삭제합니다.")
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<String> deleteReview(@PathVariable Long reviewId) {
+        reviewService.deleteReview(reviewId);
+        return ResponseEntity.ok("리뷰가 성공적으로 삭제되었습니다.");
+    }
 
     @Operation(summary = "리뷰 조회", description = "상품에 대한 리뷰를 조회합니다.")
     @GetMapping("/{productId}")
