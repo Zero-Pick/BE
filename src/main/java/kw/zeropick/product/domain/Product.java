@@ -95,9 +95,11 @@ public class Product extends BaseEntity {
         this.tags = tags;
     }
 
-    public void setPopularity(){
-        this.popularity = this.viewCount*150 + this.bookmarkCount*250 + this.reviewCount*250 + Integer.parseInt(String.valueOf(this.starRate*20*350));
+    public void setPopularity() {
+        int starRateScore = this.starRate != null ? (int) Math.round(this.starRate * 20 * 350) : 0;
+        this.popularity = this.viewCount * 150 + this.bookmarkCount * 250 + this.reviewCount * 250 + starRateScore;
     }
+
 
 
 }

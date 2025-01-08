@@ -229,6 +229,14 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
 
+        // 이미지 삭제 추가
+        List<String> oldImageUrls = review.getImageUrls();
+        if(!oldImageUrls.isEmpty()) {
+            for (String imageUrl : oldImageUrls) {
+                s3Util.deleteFile(imageUrl);
+            }
+        }
+
         Product product = review.getProduct();
 
         // 리뷰의 평점을 상품에서 제거
