@@ -21,10 +21,9 @@ public class HomeController {
     @PostMapping
     public ResponseEntity<String> home(@RequestHeader("Authorization") String token) {
 
-        if (token == null){
+        if (token == null) {
 
-        }
-        else{
+        } else {
 
         }
 
