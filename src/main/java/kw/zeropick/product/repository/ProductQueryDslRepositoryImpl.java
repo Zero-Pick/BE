@@ -4,6 +4,9 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import java.util.List;
 import kw.zeropick.product.domain.Product;
 import kw.zeropick.product.domain.QProduct;
@@ -13,71 +16,86 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.util.StringUtils;
+
 
 @RequiredArgsConstructor
 public class ProductQueryDslRepositoryImpl implements ProductQueryDslRepository {
     private final JPAQueryFactory queryFactory;
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     @Override
     public Page<Product> searchProducts(ProductSearchRequest request, Pageable pageable) {
-        QProduct product = QProduct.product;
+        String sql = "SELECT * FROM product WHERE 1=1";
+        String countSql = "SELECT COUNT(*) FROM product WHERE 1=1";
 
-        BooleanBuilder builder = new BooleanBuilder();
-
-        // 상품명 또는 브랜드명 검색
-        if (StringUtils.hasText(request.getKeyword())) {
-            builder.and(
-                    product.productName.containsIgnoreCase(request.getKeyword())
-                            .or(product.brand.containsIgnoreCase(request.getKeyword()))
-            );
+        // 기본 조건 추가
+        if (request.getKeyword() != null) {
+            sql += " AND (LOWER(product_name) LIKE :keyword OR LOWER(brand) LIKE :keyword)";
+            countSql += " AND (LOWER(product_name) LIKE :keyword OR LOWER(brand) LIKE :keyword)";
         }
-
-        // zerosugar 조건
         if (request.getZeroSugar() != null) {
-            builder.and(product.zeroSugar.eq(request.getZeroSugar()));
+            sql += " AND zero_sugar = :zeroSugar";
+            countSql += " AND zero_sugar = :zeroSugar";
         }
-
-        // zerokcal 조건
         if (request.getZeroKcal() != null) {
-            builder.and(product.zeroKcal.eq(request.getZeroKcal()));
+            sql += " AND zero_kcal = :zeroKcal";
+            countSql += " AND zero_kcal = :zeroKcal";
         }
 
-        // 인공감미료 조건1
-        if (Boolean.TRUE.equals(request.getExceptErythritol())) {
-            builder.and(product.ingredient.erythritol.isNull());
-        }
-
-        // 인공감미료 조건2
-        if (Boolean.TRUE.equals(request.getExceptAllulose())) {
-            builder.and(product.ingredient.allulose.isNull());
-        }
-
-        // 태그 조건 추가
+        // 태그 조건 추가 (JSON_CONTAINS 사용)
         if (request.getTags() != null && !request.getTags().isEmpty()) {
-            for (PositiveTagEnum tag : request.getTags()) {
-                builder.and(product.tags.contains(tag));
+            for (int i = 0; i < request.getTags().size(); i++) {
+                sql += " AND JSON_CONTAINS(tags, :tag" + i + ")";
+                countSql += " AND JSON_CONTAINS(tags, :tag" + i + ")";
             }
         }
 
-        // 카테고리 조건 추가
-        if (request.getCategory() != null) {
-            builder.and(product.category.eq(request.getCategory()));
+        // 정렬 및 페이징
+        sql += " ORDER BY product_id LIMIT :offset, :limit";
+
+        Query query = entityManager.createNativeQuery(sql, Product.class);
+
+        // 파라미터 바인딩
+        if (request.getKeyword() != null) {
+            query.setParameter("keyword", "%" + request.getKeyword().toLowerCase() + "%");
+        }
+        if (request.getZeroSugar() != null) {
+            query.setParameter("zeroSugar", request.getZeroSugar());
+        }
+        if (request.getZeroKcal() != null) {
+            query.setParameter("zeroKcal", request.getZeroKcal());
+        }
+        if (request.getTags() != null && !request.getTags().isEmpty()) {
+            for (int i = 0; i < request.getTags().size(); i++) {
+                query.setParameter("tag" + i, "\"" + request.getTags().get(i).name() + "\"");
+            }
+        }
+        query.setParameter("offset", pageable.getOffset());
+        query.setParameter("limit", pageable.getPageSize());
+
+        List<Product> products = query.getResultList();
+
+        // 총 개수 쿼리
+        Query countQuery = entityManager.createNativeQuery(countSql);
+        if (request.getKeyword() != null) {
+            countQuery.setParameter("keyword", "%" + request.getKeyword().toLowerCase() + "%");
+        }
+        if (request.getZeroSugar() != null) {
+            countQuery.setParameter("zeroSugar", request.getZeroSugar());
+        }
+        if (request.getZeroKcal() != null) {
+            countQuery.setParameter("zeroKcal", request.getZeroKcal());
+        }
+        if (request.getTags() != null && !request.getTags().isEmpty()) {
+            for (int i = 0; i < request.getTags().size(); i++) {
+                countQuery.setParameter("tag" + i, "\"" + request.getTags().get(i).name() + "\"");
+            }
         }
 
-        // 쿼리 실행
-        QueryResults<Product> results = queryFactory
-                .selectFrom(product)
-                .leftJoin(product.ingredient).fetchJoin()
-                .where(builder)
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetchResults();
+        Long total = ((Number) countQuery.getSingleResult()).longValue();
 
-        List<Product> products = results.getResults();
-        long total = results.getTotal();
         return new PageImpl<>(products, pageable, total);
     }
-
 
 }
