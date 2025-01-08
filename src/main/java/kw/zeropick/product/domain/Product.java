@@ -60,17 +60,22 @@ public class Product {
     //대표 식품명
     private String foodName;
 
+    // 인기순
+    private int popularity;
 
     public void incrementBookmarkCount() {
         this.bookmarkCount++;
+        this.setPopularity();
     }
 
     public void decrementBookmarkCount() {
         this.bookmarkCount--;
+        this.setPopularity();
     }
 
     public void incrementViewCount() {
         this.viewCount++;
+        this.setPopularity();
     }
 
     public void decrementViewCount() {
@@ -78,14 +83,22 @@ public class Product {
     }
 
     public void setStarRate(Double starRate) {
-        this.starRate = starRate;
+        this.starRate = Math.round(starRate * 100) / 100.0;
+        this.setPopularity();
     }
     public void setReviewCount(int reviewCount) {
         this.reviewCount = reviewCount;
+        this.setPopularity();
     }
     public void setTags(List<PositiveTagEnum> tags) {
         this.tags = tags;
     }
+
+    public void setPopularity(){
+        this.popularity = this.viewCount*150 + this.bookmarkCount*250 + this.reviewCount*250 + Integer.parseInt(String.valueOf(this.starRate*20*350));
+    }
+
+
 }
 
 
