@@ -1,8 +1,10 @@
 package kw.zeropick.member.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import kw.zeropick.common.domain.exception.ResourceNotFoundException;
 import kw.zeropick.member.controller.response.MemberInfoResponse;
 import kw.zeropick.member.domain.Member;
+import kw.zeropick.member.domain.MemberInterest;
 import kw.zeropick.member.domain.exception.ConfirmPasswordMismatchException;
 import kw.zeropick.member.domain.exception.FieldUpdateException;
 import kw.zeropick.member.domain.exception.InvalidMemberDataException;
@@ -91,5 +93,11 @@ public class MemberService {
         return member;
     }
 
+    public MemberInterest getMemberInterest(Long memberId) {
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 회원을 찾을 수 없습니다. ID: " + memberId));
+
+        return member.getInterest();
+    }
 
 }

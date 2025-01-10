@@ -35,9 +35,8 @@ public class Member {
     @NotNull
     private String password;
 
-
-//    @Convert(converter = StringListToStringConverter.class)
-//    private List<String> field;
+    @Enumerated(EnumType.STRING)
+    private MemberInterest interest;
 
     @NotNull
     @Enumerated(EnumType.STRING)
