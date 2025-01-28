@@ -13,6 +13,7 @@ public class ProductSearchRequest {
     private String keyword;
     private Boolean zeroSugar;
     private Boolean zeroKcal;
+    private Boolean bloodSugar;
     private Boolean exceptErythritol;
     private Boolean exceptAllulose;
     private List<PositiveTagEnum> tags; // 태그 검색 조건

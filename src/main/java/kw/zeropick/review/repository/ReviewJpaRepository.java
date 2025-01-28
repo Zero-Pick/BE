@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ReviewJpaRepository extends JpaRepository<Review, Long>, ReviewQueryDslRepository {
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.product.id = :productId AND r.rating = :rating")
+    Long countByProductIdAndRating(Long productId, Long rating);
 }

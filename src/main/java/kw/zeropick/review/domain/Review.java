@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import kw.zeropick.common.converter.StringListToStringConverter;
 import kw.zeropick.common.domain.BaseEntity;
+import kw.zeropick.member.domain.Member;
 import kw.zeropick.product.domain.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -28,11 +30,18 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false) // 리뷰 작성자
+    private Member member;
+
     @NotNull
     private Long rating;
 
     @NotNull
     private String content;
+
+    @Setter
+    private Long likeCount;
 
     @Convert(converter = StringListToStringConverter.class)
     private List<String> imageUrls = new ArrayList<>();
@@ -59,6 +68,5 @@ public class Review extends BaseEntity {
     public void setImageUrls(List<String> imageUrls) {
         this.imageUrls = imageUrls;
     }
-
-
 }
+

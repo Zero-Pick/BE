@@ -26,6 +26,8 @@ public class QProduct extends EntityPathBase<Product> {
 
     public final StringPath bigCategory = createString("bigCategory");
 
+    public final BooleanPath bloodSugar = createBoolean("bloodSugar");
+
     public final NumberPath<Integer> bookmarkCount = createNumber("bookmarkCount", Integer.class);
 
     public final StringPath brand = createString("brand");

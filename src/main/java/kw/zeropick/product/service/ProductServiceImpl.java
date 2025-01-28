@@ -1,6 +1,7 @@
 package kw.zeropick.product.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import kw.zeropick.member.domain.Member;
 import kw.zeropick.member.repository.MemberJpaRepository;
@@ -8,12 +9,18 @@ import kw.zeropick.product.domain.Bookmark;
 import kw.zeropick.product.domain.Compare;
 import kw.zeropick.product.domain.Ingredient;
 import kw.zeropick.product.domain.Product;
+import kw.zeropick.product.dto.ArtificialSweetDto;
 import kw.zeropick.product.dto.IngredientDto;
 import kw.zeropick.product.dto.ProductDto;
+import kw.zeropick.product.dto.ReviewInfoDto;
+import kw.zeropick.product.dto.ReviewTagDto;
 import kw.zeropick.product.dto.request.ProductSearchRequest;
 import kw.zeropick.product.repository.BookmarkJpaRepository;
 import kw.zeropick.product.repository.CompareJpaRepository;
 import kw.zeropick.product.repository.ProductJpaRepository;
+import kw.zeropick.review.domain.ReviewTag;
+import kw.zeropick.review.repository.ReviewJpaRepository;
+import kw.zeropick.review.repository.ReviewTagJpaRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,11 +38,13 @@ public class ProductServiceImpl implements ProductService{
     private final BookmarkJpaRepository bookmarkJpaRepository;
 
     private final MemberJpaRepository memberJpaRepository;
+    private final ReviewJpaRepository reviewJpaRepository;
+    private final ReviewTagJpaRepository reviewTagJpaRepository;
 
     @Override
     @Transactional
     public ProductDto productDetail(Long productId) {
-//      찜 여부와 비교를 사용하려면 회원이여야 하는데 그럼 상세 정보 기능은 회원과 비회원으로 나누어야 하는가?
+//      찜 여부와 비교를 사용하기 위해 회원 적용시 수정 필요
         Product product = productJpaRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 상품 없음 id: " + productId));
 
@@ -43,6 +52,50 @@ public class ProductServiceImpl implements ProductService{
         productJpaRepository.save(product);
 
         ProductDto productDto = toProductDto(product, null);
+        List<ArtificialSweetDto> artificialSweetDtos = new ArrayList<>();
+        if(product.getIngredient().getAllulose() != 0){
+            ArtificialSweetDto artificialSweetDto = ArtificialSweetDto.builder()
+                    .sweetName("알룰로오스")
+                    .sweetDetail("알룰로오스 설명")
+                    .sweetPoint("알룰로오스 특징")
+                    .sweetWarning("알룰로오스 경고")
+                    .build();
+            artificialSweetDtos.add(artificialSweetDto);
+        }
+        if(product.getIngredient().getErythritol() != 0){
+            ArtificialSweetDto artificialSweetDto = ArtificialSweetDto.builder()
+                    .sweetName("에리트리톨")
+                    .sweetDetail("에리트리톨 설명")
+                    .sweetPoint("에리트리톨 특징")
+                    .sweetWarning("에리트리톨 경고")
+                    .build();
+            artificialSweetDtos.add(artificialSweetDto);
+        }
+        productDto.setArtificialSweets(artificialSweetDtos);
+
+        // 상품에 대한 리뷰 태그 정보
+        List<ReviewTag> reviewTags = reviewTagJpaRepository.findAllByProductId(productId);
+        List<ReviewTagDto> reviewTagDtos = reviewTags.stream()
+                .map(rt -> ReviewTagDto.builder()
+                        .tagCount(rt.getTagCount())
+                        .positiveTagEnum(rt.getPositiveTagEnum())
+                        .negativeTagEnum(rt.getNegativeTagEnum())
+                        .positiveNegative(rt.getPositiveNegative())
+                        .build())
+                .toList();
+
+        productDto.setReviewTags(reviewTagDtos);
+
+        // 별점 정보
+        ReviewInfoDto reviewInfoDto = ReviewInfoDto.builder()
+                .oneStar(reviewJpaRepository.countByProductIdAndRating(productId, 1L).intValue())
+                .twoStar(reviewJpaRepository.countByProductIdAndRating(productId, 2L).intValue())
+                .threeStar(reviewJpaRepository.countByProductIdAndRating(productId, 3L).intValue())
+                .fourStar(reviewJpaRepository.countByProductIdAndRating(productId, 4L).intValue())
+                .fiveStar(reviewJpaRepository.countByProductIdAndRating(productId, 5L).intValue())
+                .build();
+
+        productDto.setReviewInfo(reviewInfoDto);
 
         return productDto;
     }

@@ -51,7 +51,7 @@ public class ProductController {
         }
     }
 
-//    검색기능(태그 검색 보류)
+//    검색기능
     @GetMapping("/search")
     public ResponseEntity<ApiResponse> search(ProductSearchRequest request,
                                               @RequestParam(defaultValue = "0") int page, // 현재 페이지

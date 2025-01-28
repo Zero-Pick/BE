@@ -24,9 +24,13 @@ public class ReviewResponse {
 
     private String content;
 
+    private Long likeCount;
+
     private List<String> imageUrls = new ArrayList<>();
 
     private List<PositiveTagEnum> positiveTags = new ArrayList<>();
 
     private List<NegativeTagEnum> negativeTags = new ArrayList<>();
+
+    private Boolean myReview;
 }

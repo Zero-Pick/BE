@@ -7,15 +7,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import kw.zeropick.common.domain.exception.ResourceNotFoundException;
+import kw.zeropick.member.domain.Member;
+import kw.zeropick.member.repository.MemberJpaRepository;
+import kw.zeropick.product.domain.Compare;
 import kw.zeropick.product.domain.Product;
 import kw.zeropick.product.repository.ProductJpaRepository;
 import kw.zeropick.review.domain.PositiveTagEnum;
 import kw.zeropick.review.domain.Review;
+import kw.zeropick.review.domain.ReviewLike;
 import kw.zeropick.review.domain.ReviewTag;
 import kw.zeropick.review.domain.ReviewTagMapping;
 import kw.zeropick.review.dto.request.ReviewRequestDto;
 import kw.zeropick.review.dto.response.ReviewResponse;
 import kw.zeropick.review.repository.ReviewJpaRepository;
+import kw.zeropick.review.repository.ReviewLikeJpaRepository;
 import kw.zeropick.review.repository.ReviewTagJpaRepository;
 import kw.zeropick.review.repository.ReviewTagMappingJpaRepository;
 import kw.zeropick.util.S3Util;
@@ -30,16 +35,30 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
+    private final MemberJpaRepository memberJpaRepository;
     private final ReviewJpaRepository reviewRepository;
     private final ProductJpaRepository productRepository;
     private final ReviewTagJpaRepository reviewTagRepository;
     private final ReviewTagMappingJpaRepository reviewTagMappingRepository;
+    private final ReviewLikeJpaRepository reviewLikeJpaRepository;
 
     private final S3Util s3Util;
 
     public Page<ReviewResponse> getReviews(Long productId, PositiveTagEnum positiveTag, String sort, Pageable pageable) {
-        return reviewRepository.findReviewsByProductId(productId, positiveTag, sort, pageable);
+        Long currentMemberId = 1L; // 로그인 적용 전으로 1L 고정
+        Member currentMember = memberJpaRepository.findById(currentMemberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다."));
+
+        Page<ReviewResponse> reviewsByProductId = reviewRepository.findReviewsByProductId(productId, positiveTag, sort, pageable);
+
+        // myReview 값 설정
+        return reviewsByProductId.map(reviewResponse -> {
+            boolean isMyReview = reviewResponse.getUserName() != null && currentMember.getName().equals(reviewResponse.getUserName());
+            reviewResponse.setMyReview(isMyReview);
+            return reviewResponse;
+        });
     }
+
 
     @Override
     @Transactional
@@ -275,5 +294,47 @@ public class ReviewServiceImpl implements ReviewService {
         productRepository.save(product);
     }
 
+    @Override
+    public Page<ReviewResponse> bookmarkProductList(Long memberId, int page, int size) {
+//        좋아요한 리뷰 보류
+        return null;
+    }
 
+    @Override
+    @Transactional
+    public void reviewLike(Long reviewId, Long memberId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 리뷰 없음 id: " + reviewId));
+
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 유저 없음 id: " + memberId));
+
+        if(reviewLikeJpaRepository.existsByReviewAndMember(review, member)) {
+            throw new RuntimeException("이미 좋아요한 리뷰입니다.");
+        }
+
+        review.setLikeCount(review.getLikeCount() + 1);
+        reviewRepository.save(review);
+
+        ReviewLike reviewLike = new ReviewLike(member, review);
+        reviewLikeJpaRepository.save(reviewLike);
+    }
+
+    @Override
+    @Transactional
+    public void undoReviewLike(Long reviewId, Long memberId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 리뷰 없음 id: " + reviewId));
+
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 유저 없음 id: " + memberId));
+
+        ReviewLike reviewLike = reviewLikeJpaRepository.findByReviewAndMember(review, member)
+                .orElseThrow(() -> new EntityNotFoundException("해당 리뷰는 좋아요 목록에 없습니다."));
+
+        review.setLikeCount(review.getLikeCount() - 1);
+        reviewRepository.save(review);
+
+        reviewLikeJpaRepository.delete(reviewLike);
+    }
 }

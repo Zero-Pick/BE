@@ -33,6 +33,10 @@ public class QReview extends EntityPathBase<Review> {
 
     public final ListPath<String, StringPath> imageUrls = this.<String, StringPath>createList("imageUrls", String.class, StringPath.class, PathInits.DIRECT2);
 
+    public final NumberPath<Long> likeCount = createNumber("likeCount", Long.class);
+
+    public final kw.zeropick.member.domain.QMember member;
+
     public final kw.zeropick.product.domain.QProduct product;
 
     public final NumberPath<Long> rating = createNumber("rating", Long.class);
@@ -60,6 +64,7 @@ public class QReview extends EntityPathBase<Review> {
 
     public QReview(Class<? extends Review> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.member = inits.isInitialized("member") ? new kw.zeropick.member.domain.QMember(forProperty("member")) : null;
         this.product = inits.isInitialized("product") ? new kw.zeropick.product.domain.QProduct(forProperty("product"), inits.get("product")) : null;
     }
 

@@ -34,6 +34,8 @@ public class Product extends BaseEntity {
 
     private Boolean zeroKcal;
 
+    private Boolean bloodSugar;
+
     private int price;
 
     private Double starRate;
