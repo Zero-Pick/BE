@@ -7,7 +7,9 @@ import kw.zeropick.common.LoginUser;
 import kw.zeropick.member.controller.response.CreateMemberResponse;
 import kw.zeropick.member.controller.response.MemberFieldResponse;
 import kw.zeropick.member.controller.response.MemberInfoResponse;
+import kw.zeropick.member.controller.response.MypageInfoResponse;
 import kw.zeropick.member.domain.Member;
+import kw.zeropick.member.dto.MemberEmailDto;
 import kw.zeropick.member.dto.MemberFieldDto;
 import kw.zeropick.member.dto.MemberInfoChangeDto;
 import kw.zeropick.member.dto.MemberJoinDto;
@@ -27,18 +29,6 @@ import java.util.List;
 public class MemberController {
 
     private final MemberService memberService;
-
-    @Operation(
-            summary = "회원가입 요청",
-            description = "회원가입 요청을 받아 성공/실패 여부를 반환합니다.")
-    @PostMapping
-    public ResponseEntity<CreateMemberResponse> saveMember(@RequestBody @Valid MemberJoinDto memberJoinDto) {
-        Member joinMember = memberService.join(memberJoinDto);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new CreateMemberResponse(joinMember.getId(), "Member created successfully"));
-    }
 
     @Operation(
             summary = "내 정보 조회",
@@ -62,26 +52,29 @@ public class MemberController {
         return ResponseEntity.ok(Boolean.TRUE);
     }
 
-//    @Operation(
-//            summary = "관심분야 조회",
-//            description = "마이페이지에서 관심분야를 조회합니다.")
-//    @GetMapping("/myPage/field")
-//    public ResponseEntity<MemberFieldResponse> getField() {
-//        Long loginUser = LoginUser.get().getId();
-//        List<String> memberField = memberService.getMemberField(loginUser);
-//        return ResponseEntity.ok().body(new MemberFieldResponse(memberField));
-//    }
+    @Operation(
+            summary = "마이페이지 클릭시 정보 조회",
+            description = "마이페이지 클릭 시 닉네임, 찜한 제품 수, 내가 쓴 리뷰 수를 반환합니다.")
+    @GetMapping("/myPage")
+    public ResponseEntity<MypageInfoResponse> getMypageInfo() {
+        Long loginUser = LoginUser.get().getId();
+        MypageInfoResponse mypageInfoResponse = memberService.getMypageInfo(loginUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(mypageInfoResponse);
+    }
 
-//    @Operation(
-//            summary = "관심분야 등록/수정",
-//            description = "초기/마이페이지에서 관심분야를 등록/수정합니다.")
-//    @PostMapping({"/field", "/myPage/field"})
-//    public ResponseEntity<Boolean> postField(@RequestBody MemberFieldDto memberFieldDto) {
-//
-//        Long loginUserId = LoginUser.get().getId();
-//        memberService.updateMemberField(loginUserId, memberFieldDto);
-//        return ResponseEntity.ok(Boolean.TRUE);
-//    }
+    @Operation(
+            summary = "내정보 조회 이메일 일치 확인",
+            description = "내 정보를 조회를 위해 이메일 일치 여부를 확인합니다.")
+    @PostMapping("/checkEmail")
+    public ResponseEntity<Boolean> checkEmail(@RequestBody MemberEmailDto memberEmailDto) {
+        Long loginUser = LoginUser.get().getId();
+        Member member = memberService.getById(loginUser);
+
+        return ResponseEntity.ok(member.getEmail().equals(memberEmailDto.getEmail()));
+    }
+
 
 }
 
