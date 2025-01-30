@@ -32,7 +32,8 @@ public class ReviewController {
     public ResponseEntity<String> createReview(
             @RequestPart(value = "review") ReviewRequestDto reviewRequestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        reviewService.createReview(reviewRequestDto, files);
+        Long memberId = 1L;
+        reviewService.createReview(memberId, reviewRequestDto, files);
         return ResponseEntity.ok("리뷰가 성공적으로 등록되었습니다.");
     }
 

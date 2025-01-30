@@ -69,7 +69,7 @@ public class ProductQueryDslRepositoryImpl implements ProductQueryDslRepository 
             for (PositiveTagEnum tag : request.getTags()) {
                 tagsCondition.or(Expressions.stringTemplate(
                         "cast({0} as text)",
-                        product.tags
+                        product.positiveTop3tags
                 ).like("%" + tag.name() + "%"));
             }
             builder.and(tagsCondition);

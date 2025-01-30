@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import kw.zeropick.common.converter.StringListToStringConverter;
 import kw.zeropick.common.domain.BaseEntity;
+import kw.zeropick.review.domain.NegativeTagEnum;
 import kw.zeropick.review.domain.PositiveTagEnum;
 import kw.zeropick.review.domain.Review;
 import lombok.*;
@@ -48,8 +49,13 @@ public class Product extends BaseEntity {
 
     private int reviewCount;
 
+    //상품 별 긍정태그 상위 3개
     @Convert(converter = StringListToStringConverter.class)
-    private List<PositiveTagEnum> tags;
+    private List<PositiveTagEnum> positiveTop3tags;
+
+    //상품 별 부정태그 상위 3개
+    @Convert(converter = StringListToStringConverter.class)
+    private List<NegativeTagEnum> negativeTop3tags;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<Review> reviews = new ArrayList<>();
@@ -93,8 +99,12 @@ public class Product extends BaseEntity {
         this.reviewCount = reviewCount;
         this.setPopularity();
     }
-    public void setTags(List<PositiveTagEnum> tags) {
-        this.tags = tags;
+    public void setPositiveTop3tags(List<PositiveTagEnum> positiveTop3tags) {
+        this.positiveTop3tags = positiveTop3tags;
+    }
+
+    public void setNegativeTop3tags(List<NegativeTagEnum> negativeTop3tags) {
+        this.negativeTop3tags = negativeTop3tags;
     }
 
     public void setPopularity() {
