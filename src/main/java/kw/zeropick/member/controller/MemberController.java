@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kw.zeropick.common.LoginUser;
-import kw.zeropick.member.controller.response.CreateMemberResponse;
-import kw.zeropick.member.controller.response.MemberFieldResponse;
-import kw.zeropick.member.controller.response.MemberInfoResponse;
-import kw.zeropick.member.controller.response.MypageInfoResponse;
+import kw.zeropick.member.controller.response.*;
 import kw.zeropick.member.domain.Member;
 import kw.zeropick.member.dto.MemberEmailDto;
 import kw.zeropick.member.dto.MemberInfoChangeDto;
@@ -62,6 +59,20 @@ public class MemberController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(mypageInfoResponse);
+    }
+
+    @Operation(
+            summary = "마스킹 이메일 조회",
+            description = "내 정보 조회를 위한 마스킹 이메일을 불러옵니다.")
+    @GetMapping("/getEmail")
+    public ResponseEntity<MaskingEmailResponse> getEmail() {
+
+        Member member = memberService.getById(LoginUser.get().getId());
+        MaskingEmailResponse response = memberService.getMemberEmail(member);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
     }
 
     @Operation(

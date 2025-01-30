@@ -2,6 +2,7 @@ package kw.zeropick.member.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import kw.zeropick.common.domain.exception.ResourceNotFoundException;
+import kw.zeropick.member.controller.response.MaskingEmailResponse;
 import kw.zeropick.member.controller.response.MemberInfoResponse;
 import kw.zeropick.member.controller.response.MypageInfoResponse;
 import kw.zeropick.member.domain.Member;
@@ -84,6 +85,34 @@ public class MemberService {
                 .bookmarkCount(bookmarkCount)
                 .reviewCount(reviewCount)
                 .build();
+    }
+
+
+    public MaskingEmailResponse getMemberEmail(Member member) {
+        if(member.getEmail() == null){
+            throw new InvalidMemberDataException();
+        }
+        String maskEmail = maskEmail(member.getEmail());
+
+        return MaskingEmailResponse.builder()
+                .maskEmail(maskEmail)
+                .build();
+    }
+
+    private static String maskEmail(String email) {
+        String[] parts = email.split("@");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("유효하지 않은 이메일 형식입니다.");
+        }
+
+        String localPart = parts[0];
+        String domainPart = parts[1];
+
+        String maskedLocalPart = localPart.length() > 2
+                ? localPart.substring(0, 2) + "*".repeat(localPart.length() - 2)
+                : localPart;
+
+        return maskedLocalPart + "@" + domainPart;
     }
 
 }
