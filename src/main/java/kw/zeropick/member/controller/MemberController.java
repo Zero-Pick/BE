@@ -10,9 +10,7 @@ import kw.zeropick.member.controller.response.MemberInfoResponse;
 import kw.zeropick.member.controller.response.MypageInfoResponse;
 import kw.zeropick.member.domain.Member;
 import kw.zeropick.member.dto.MemberEmailDto;
-import kw.zeropick.member.dto.MemberFieldDto;
 import kw.zeropick.member.dto.MemberInfoChangeDto;
-import kw.zeropick.member.dto.MemberJoinDto;
 import kw.zeropick.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -44,12 +42,14 @@ public class MemberController {
 
     @Operation(
             summary = "내 정보 수정",
-            description = "내 정보 수정 요청을 받아 성공/실패를 반환합니다.")
+            description = "내 정보 수정 요청을 받아 수정된 정보를 반환합니다.")
     @PutMapping("/myPage/info")
-    public ResponseEntity<Boolean> changeMemberInfo(@RequestBody @Valid MemberInfoChangeDto memberInfoChangeDto) {
+    public ResponseEntity<MemberInfoResponse> changeMemberInfo(@RequestBody @Valid MemberInfoChangeDto memberInfoChangeDto) {
         Long loginUser = LoginUser.get().getId();
-        memberService.updateMemberInfo(loginUser, memberInfoChangeDto);
-        return ResponseEntity.ok(Boolean.TRUE);
+        MemberInfoResponse updatedInfo = memberService.updateMemberInfo(loginUser, memberInfoChangeDto);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(updatedInfo);
     }
 
     @Operation(

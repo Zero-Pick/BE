@@ -50,7 +50,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         // myReview 값 설정
         return reviewsByProductId.map(reviewResponse -> {
-            boolean isMyReview = reviewResponse.getUserName() != null && currentMember.getName().equals(reviewResponse.getUserName());
+            boolean isMyReview = reviewResponse.getUserName() != null && currentMember.getNickname().equals(reviewResponse.getUserName());
             reviewResponse.setMyReview(isMyReview);
             return reviewResponse;
         });

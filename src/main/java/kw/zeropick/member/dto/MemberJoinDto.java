@@ -17,7 +17,7 @@ public class MemberJoinDto {
     @NotNull
     private String email;
     @NotNull
-    private String name;
+    private String nickname;
     @NotNull
     private String phoneNumber;
     @NotNull
@@ -26,8 +26,6 @@ public class MemberJoinDto {
     private String password;
     @NotNull
     private String passwordConfirm;
-    @NotNull
-    private MarketingAgree marketingAgree;
     @NotNull
     private State userState;
 
@@ -44,26 +42,24 @@ public class MemberJoinDto {
 //    }
 
     @Builder
-    public MemberJoinDto(String email, String name, String phoneNumber, LocalDate birthDate,
-                         String password, String passwordConfirm, MarketingAgree marketingAgree, State userState) {
+    public MemberJoinDto(String email, String nickname, String phoneNumber, LocalDate birthDate,
+                         String password, String passwordConfirm, State userState) {
         this.email = email;
-        this.name = name;
+        this.nickname = nickname;
         this.phoneNumber = phoneNumber;
         this.birthDate = birthDate;
         this.password = password;
         this.passwordConfirm = passwordConfirm;
-        this.marketingAgree = marketingAgree;
         this.userState = userState;
     }
 
     public Member toEntity() {
         return Member.builder()
                 .email(email)
-                .name(name)
+                .nickname(nickname)
                 .phoneNumber(phoneNumber)
                 .birthDate(birthDate)
                 .password(password)
-                .marketingAgree(marketingAgree)
                 .userState(userState)
                 .build();
     }
