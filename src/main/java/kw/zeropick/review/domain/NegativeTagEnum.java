@@ -2,5 +2,8 @@ package kw.zeropick.review.domain;
 
 public enum NegativeTagEnum {
     NOT_GOOD,
-    EXPENSIVE
+    EXPENSIVE,
+    A,
+    B,
+    C
 }

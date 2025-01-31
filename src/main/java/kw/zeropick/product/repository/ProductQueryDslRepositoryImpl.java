@@ -50,6 +50,11 @@ public class ProductQueryDslRepositoryImpl implements ProductQueryDslRepository 
             builder.and(product.zeroKcal.eq(request.getZeroKcal()));
         }
 
+        // bloodSugar 조건
+        if (request.getBloodSugar() != null) {
+            builder.and(product.bloodSugar.eq(request.getBloodSugar()));
+        }
+
         // 인공감미료 조건
         if (Boolean.TRUE.equals(request.getExceptErythritol())) {
             builder.and(product.ingredient.erythritol.isNull());
@@ -64,7 +69,7 @@ public class ProductQueryDslRepositoryImpl implements ProductQueryDslRepository 
             for (PositiveTagEnum tag : request.getTags()) {
                 tagsCondition.or(Expressions.stringTemplate(
                         "cast({0} as text)",
-                        product.tags
+                        product.positiveTop3tags
                 ).like("%" + tag.name() + "%"));
             }
             builder.and(tagsCondition);

@@ -4,13 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kw.zeropick.common.LoginUser;
-import kw.zeropick.member.controller.response.CreateMemberResponse;
-import kw.zeropick.member.controller.response.MemberFieldResponse;
-import kw.zeropick.member.controller.response.MemberInfoResponse;
+import kw.zeropick.member.controller.response.*;
 import kw.zeropick.member.domain.Member;
-import kw.zeropick.member.dto.MemberFieldDto;
+import kw.zeropick.member.dto.MemberEmailDto;
 import kw.zeropick.member.dto.MemberInfoChangeDto;
-import kw.zeropick.member.dto.MemberJoinDto;
 import kw.zeropick.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,18 +26,6 @@ public class MemberController {
     private final MemberService memberService;
 
     @Operation(
-            summary = "회원가입 요청",
-            description = "회원가입 요청을 받아 성공/실패 여부를 반환합니다.")
-    @PostMapping
-    public ResponseEntity<CreateMemberResponse> saveMember(@RequestBody @Valid MemberJoinDto memberJoinDto) {
-        Member joinMember = memberService.join(memberJoinDto);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new CreateMemberResponse(joinMember.getId(), "Member created successfully"));
-    }
-
-    @Operation(
             summary = "내 정보 조회",
             description = "마이페이지에서 내 정보들을 가져옵니다.")
     @GetMapping("/myPage/info")
@@ -54,34 +39,53 @@ public class MemberController {
 
     @Operation(
             summary = "내 정보 수정",
-            description = "내 정보 수정 요청을 받아 성공/실패를 반환합니다.")
+            description = "내 정보 수정 요청을 받아 수정된 정보를 반환합니다.")
     @PutMapping("/myPage/info")
-    public ResponseEntity<Boolean> changeMemberInfo(@RequestBody @Valid MemberInfoChangeDto memberInfoChangeDto) {
+    public ResponseEntity<MemberInfoResponse> changeMemberInfo(@RequestBody @Valid MemberInfoChangeDto memberInfoChangeDto) {
         Long loginUser = LoginUser.get().getId();
-        memberService.updateMemberInfo(loginUser, memberInfoChangeDto);
-        return ResponseEntity.ok(Boolean.TRUE);
+        MemberInfoResponse updatedInfo = memberService.updateMemberInfo(loginUser, memberInfoChangeDto);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(updatedInfo);
     }
 
-//    @Operation(
-//            summary = "관심분야 조회",
-//            description = "마이페이지에서 관심분야를 조회합니다.")
-//    @GetMapping("/myPage/field")
-//    public ResponseEntity<MemberFieldResponse> getField() {
-//        Long loginUser = LoginUser.get().getId();
-//        List<String> memberField = memberService.getMemberField(loginUser);
-//        return ResponseEntity.ok().body(new MemberFieldResponse(memberField));
-//    }
+    @Operation(
+            summary = "마이페이지 클릭시 정보 조회",
+            description = "마이페이지 클릭 시 닉네임, 찜한 제품 수, 내가 쓴 리뷰 수를 반환합니다.")
+    @GetMapping("/myPage")
+    public ResponseEntity<MypageInfoResponse> getMypageInfo() {
+        Long loginUser = LoginUser.get().getId();
+        MypageInfoResponse mypageInfoResponse = memberService.getMypageInfo(loginUser);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(mypageInfoResponse);
+    }
 
-//    @Operation(
-//            summary = "관심분야 등록/수정",
-//            description = "초기/마이페이지에서 관심분야를 등록/수정합니다.")
-//    @PostMapping({"/field", "/myPage/field"})
-//    public ResponseEntity<Boolean> postField(@RequestBody MemberFieldDto memberFieldDto) {
-//
-//        Long loginUserId = LoginUser.get().getId();
-//        memberService.updateMemberField(loginUserId, memberFieldDto);
-//        return ResponseEntity.ok(Boolean.TRUE);
-//    }
+    @Operation(
+            summary = "마스킹 이메일 조회",
+            description = "내 정보 조회를 위한 마스킹 이메일을 불러옵니다.")
+    @GetMapping("/getEmail")
+    public ResponseEntity<MaskingEmailResponse> getEmail() {
+
+        Member member = memberService.getById(LoginUser.get().getId());
+        MaskingEmailResponse response = memberService.getMemberEmail(member);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
+    }
+
+    @Operation(
+            summary = "내정보 조회 이메일 일치 확인",
+            description = "내 정보를 조회를 위해 이메일 일치 여부를 확인합니다.")
+    @PostMapping("/checkEmail")
+    public ResponseEntity<Boolean> checkEmail(@RequestBody MemberEmailDto memberEmailDto) {
+        Long loginUser = LoginUser.get().getId();
+        Member member = memberService.getById(loginUser);
+
+        return ResponseEntity.ok(member.getEmail().equals(memberEmailDto.getEmail()));
+    }
+
 
 }
 

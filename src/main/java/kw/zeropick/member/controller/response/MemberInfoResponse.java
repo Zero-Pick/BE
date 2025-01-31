@@ -1,6 +1,7 @@
 package kw.zeropick.member.controller.response;
 
 
+import kw.zeropick.member.domain.MemberInterest;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,18 +10,15 @@ import java.time.LocalDate;
 @Data
 public class MemberInfoResponse {
     private String email;
-    private String name;
-    private String phoneNumber;
-    private LocalDate birthDate;
-
-    public MemberInfoResponse() {
-    }
+    private String nickname;
+    private MemberInterest interest;
+    private Boolean diabetes;
 
     @Builder
-    public MemberInfoResponse(String email, String name, String phoneNumber, LocalDate birthDate) {
+    public MemberInfoResponse(String email, String nickname, MemberInterest interest, Boolean diabetes) {
         this.email = email;
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-        this.birthDate = birthDate;
+        this.nickname = nickname;
+        this.interest = interest;
+        this.diabetes = diabetes;
     }
 }

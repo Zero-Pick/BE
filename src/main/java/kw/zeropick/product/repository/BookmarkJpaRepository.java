@@ -14,5 +14,6 @@ public interface BookmarkJpaRepository extends JpaRepository<Bookmark, Long> {
     Optional<Bookmark> findByProductAndMember(Product product, Member member);
     Page<Bookmark> findAllByMember(Member member, Pageable pageable);
     boolean existsByProductIdAndMemberId(Long productId, Long memberId);
+    Long countByMember(Member member);
 
 }

@@ -26,6 +26,8 @@ public class QProduct extends EntityPathBase<Product> {
 
     public final StringPath bigCategory = createString("bigCategory");
 
+    public final BooleanPath bloodSugar = createBoolean("bloodSugar");
+
     public final NumberPath<Integer> bookmarkCount = createNumber("bookmarkCount", Integer.class);
 
     public final StringPath brand = createString("brand");
@@ -43,7 +45,11 @@ public class QProduct extends EntityPathBase<Product> {
 
     public final QIngredient ingredient;
 
+    public final ListPath<kw.zeropick.review.domain.NegativeTagEnum, EnumPath<kw.zeropick.review.domain.NegativeTagEnum>> negativeTop3tags = this.<kw.zeropick.review.domain.NegativeTagEnum, EnumPath<kw.zeropick.review.domain.NegativeTagEnum>>createList("negativeTop3tags", kw.zeropick.review.domain.NegativeTagEnum.class, EnumPath.class, PathInits.DIRECT2);
+
     public final NumberPath<Integer> popularity = createNumber("popularity", Integer.class);
+
+    public final ListPath<kw.zeropick.review.domain.PositiveTagEnum, EnumPath<kw.zeropick.review.domain.PositiveTagEnum>> positiveTop3tags = this.<kw.zeropick.review.domain.PositiveTagEnum, EnumPath<kw.zeropick.review.domain.PositiveTagEnum>>createList("positiveTop3tags", kw.zeropick.review.domain.PositiveTagEnum.class, EnumPath.class, PathInits.DIRECT2);
 
     public final NumberPath<Integer> price = createNumber("price", Integer.class);
 
@@ -54,8 +60,6 @@ public class QProduct extends EntityPathBase<Product> {
     public final ListPath<kw.zeropick.review.domain.Review, kw.zeropick.review.domain.QReview> reviews = this.<kw.zeropick.review.domain.Review, kw.zeropick.review.domain.QReview>createList("reviews", kw.zeropick.review.domain.Review.class, kw.zeropick.review.domain.QReview.class, PathInits.DIRECT2);
 
     public final NumberPath<Double> starRate = createNumber("starRate", Double.class);
-
-    public final ListPath<kw.zeropick.review.domain.PositiveTagEnum, EnumPath<kw.zeropick.review.domain.PositiveTagEnum>> tags = this.<kw.zeropick.review.domain.PositiveTagEnum, EnumPath<kw.zeropick.review.domain.PositiveTagEnum>>createList("tags", kw.zeropick.review.domain.PositiveTagEnum.class, EnumPath.class, PathInits.DIRECT2);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;

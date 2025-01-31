@@ -51,7 +51,8 @@ public class ProductController {
         }
     }
 
-//    검색기능(태그 검색 보류)
+//  검색 기능
+    @Operation(summary = "상품 검색 기능", description = "상품 검색 기능(로그인 기능 적용 전이므로 1번유저 고정)")
     @GetMapping("/search")
     public ResponseEntity<ApiResponse> search(ProductSearchRequest request,
                                               @RequestParam(defaultValue = "0") int page, // 현재 페이지

@@ -24,7 +24,7 @@ public class Member {
     private String email;
 
     @NotNull
-    private String name;
+    private String nickname;
 
     @NotNull
     private String phoneNumber;
@@ -35,12 +35,12 @@ public class Member {
     @NotNull
     private String password;
 
+    //관심 있는 제로 종류(제로 슈거 / 제로 칼로리)
     @Enumerated(EnumType.STRING)
     private MemberInterest interest;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    private MarketingAgree marketingAgree;
+    //당뇨 환자 여부
+    private Boolean diabetes;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -49,24 +49,31 @@ public class Member {
     private LocalDate deleteDate;
 
 
-    public Member( String email, String name, String phoneNumber, LocalDate birthDate, String password, MarketingAgree marketingAgree, State userState) {
+    public Member( String email, String nickname, String phoneNumber, LocalDate birthDate, String password, State userState) {
         this.email = email;
-        this.name = name;
+        this.nickname = nickname;
         this.phoneNumber = phoneNumber;
         this.birthDate = birthDate;
         this.password = password;
-        this.marketingAgree = marketingAgree;
         this.userState = userState;
     }
 
-//    public void changeFieldInfo(List<String> field){
-//        this.field = field;
-//    }
 
-    public void changeMemberInfo(String phoneNumber, LocalDate birthDate, MarketingAgree marketingAgree){
+    public void changeMemberInfo(String phoneNumber, LocalDate birthDate){
         this.phoneNumber = phoneNumber;
         this.birthDate = birthDate;
-        this.marketingAgree = marketingAgree;
+    }
+
+    public void setNickname(String nickname){
+        this.nickname = nickname;
+    }
+
+    public void setInterest(MemberInterest interest){
+        this.interest = interest;
+    }
+
+    public void setDiabetes(Boolean diabetes){
+        this.diabetes = diabetes;
     }
 
 

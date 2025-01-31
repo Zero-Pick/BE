@@ -2,20 +2,22 @@ package kw.zeropick.review.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import kw.zeropick.common.domain.exception.ResourceNotFoundException;
+import kw.zeropick.member.domain.Member;
+import kw.zeropick.member.repository.MemberJpaRepository;
+import kw.zeropick.product.domain.Compare;
 import kw.zeropick.product.domain.Product;
 import kw.zeropick.product.repository.ProductJpaRepository;
-import kw.zeropick.review.domain.PositiveTagEnum;
-import kw.zeropick.review.domain.Review;
-import kw.zeropick.review.domain.ReviewTag;
-import kw.zeropick.review.domain.ReviewTagMapping;
+import kw.zeropick.review.domain.*;
 import kw.zeropick.review.dto.request.ReviewRequestDto;
 import kw.zeropick.review.dto.response.ReviewResponse;
 import kw.zeropick.review.repository.ReviewJpaRepository;
+import kw.zeropick.review.repository.ReviewLikeJpaRepository;
 import kw.zeropick.review.repository.ReviewTagJpaRepository;
 import kw.zeropick.review.repository.ReviewTagMappingJpaRepository;
 import kw.zeropick.util.S3Util;
@@ -30,22 +32,38 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
+    private final MemberJpaRepository memberJpaRepository;
     private final ReviewJpaRepository reviewRepository;
     private final ProductJpaRepository productRepository;
     private final ReviewTagJpaRepository reviewTagRepository;
     private final ReviewTagMappingJpaRepository reviewTagMappingRepository;
+    private final ReviewLikeJpaRepository reviewLikeJpaRepository;
 
     private final S3Util s3Util;
 
     public Page<ReviewResponse> getReviews(Long productId, PositiveTagEnum positiveTag, String sort, Pageable pageable) {
-        return reviewRepository.findReviewsByProductId(productId, positiveTag, sort, pageable);
+        Long currentMemberId = 1L; // 로그인 적용 전으로 1L 고정
+        Member currentMember = memberJpaRepository.findById(currentMemberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 멤버를 찾을 수 없습니다."));
+
+        Page<ReviewResponse> reviewsByProductId = reviewRepository.findReviewsByProductId(productId, positiveTag, sort, pageable);
+
+        // myReview 값 설정
+        return reviewsByProductId.map(reviewResponse -> {
+            boolean isMyReview = reviewResponse.getUserName() != null && currentMember.getNickname().equals(reviewResponse.getUserName());
+            reviewResponse.setMyReview(isMyReview);
+            return reviewResponse;
+        });
     }
 
     @Override
     @Transactional
-    public void createReview(ReviewRequestDto reviewRequestDto, List<MultipartFile> files) {
+    public void createReview(Long memberId, ReviewRequestDto reviewRequestDto, List<MultipartFile> files) {
         Product product = productRepository.findById(reviewRequestDto.getProductId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 상품을 찾을 수 없습니다."));
+
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 회원을 찾을 수 없습니다."));
 
         double newStarRate = ((product.getStarRate() * product.getReviewCount()) + reviewRequestDto.getRating()) / (product.getReviewCount() + 1);
         product.setStarRate(newStarRate);
@@ -67,59 +85,14 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = Review.builder()
                 .product(product)
+                .member(member)
                 .rating(reviewRequestDto.getRating())
                 .content(reviewRequestDto.getContent())
                 .imageUrls(images)
                 .build();
         reviewRepository.save(review);
 
-        reviewRequestDto.getPositiveTags().forEach(tag -> {
-            Optional<ReviewTag> existingTag = reviewTagRepository.findByProductIdAndTag(product.getId(), tag, null);
-            ReviewTag reviewTag;
-            if (existingTag.isPresent()) {
-                reviewTag = existingTag.get();
-                reviewTag.setTagCount(reviewTag.getTagCount() + 1);
-            } else {
-                reviewTag = ReviewTag.builder()
-                        .productId(product.getId())
-                        .positiveTagEnum(tag)
-                        .tagCount(1)
-                        .positiveNegative(true)
-                        .build();
-            }
-//            reviewTag.setReview(review);
-            reviewTagRepository.save(reviewTag);
-            reviewTagMappingRepository.save(new ReviewTagMapping(review, reviewTag));
-        });
-
-        reviewRequestDto.getNegativeTags().forEach(tag -> {
-            Optional<ReviewTag> existingTag = reviewTagRepository.findByProductIdAndTag(product.getId(), null, tag);
-            ReviewTag reviewTag;
-            if (existingTag.isPresent()) {
-                reviewTag = existingTag.get();
-                reviewTag.setTagCount(reviewTag.getTagCount() + 1);
-            } else {
-                reviewTag = ReviewTag.builder()
-                        .productId(product.getId())
-                        .negativeTagEnum(tag)
-                        .tagCount(1)
-                        .positiveNegative(false)
-                        .build();
-            }
-//            reviewTag.setReview(review);
-            reviewTagRepository.save(reviewTag);
-            reviewTagMappingRepository.save(new ReviewTagMapping(review, reviewTag));
-        });
-
-        List<PositiveTagEnum> topTags = reviewTagRepository.findAll().stream()
-                .filter(tag -> tag.getPositiveNegative() && tag.getProductId() == product.getId())
-                .sorted((t1, t2) -> t2.getTagCount().compareTo(t1.getTagCount()))
-                .limit(3)
-                .map(ReviewTag::getPositiveTagEnum)
-                .collect(Collectors.toList());
-
-        product.setTags(topTags);
-        productRepository.save(product);
+        saveReviewTags(reviewRequestDto, review, product);
     }
 
     @Override
@@ -129,13 +102,10 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
 
         Product product = existingReview.getProduct();
-
-        // 기존 평점 제거 후 새로운 평점 반영
         double newStarRate = ((product.getStarRate() * product.getReviewCount()) - existingReview.getRating() + reviewRequestDto.getRating()) / product.getReviewCount();
         product.setStarRate(newStarRate);
         productRepository.save(product);
 
-        // 리뷰 정보 업데이트
         existingReview.setRating(reviewRequestDto.getRating());
         existingReview.setContent(reviewRequestDto.getContent());
         List<String> oldImageUrls = existingReview.getImageUrls();
@@ -158,122 +128,110 @@ public class ReviewServiceImpl implements ReviewService {
         existingReview.setImageUrls(newImageUrls);
         reviewRepository.save(existingReview);
 
-        // 기존 태그 매핑 삭제
-        List<ReviewTagMapping> existingMappings = reviewTagMappingRepository.findAllByReview(existingReview);
-
         reviewTagMappingRepository.deleteAllByReview(existingReview);
-
-        for (ReviewTagMapping mapping : existingMappings) {
-            ReviewTag reviewTag = mapping.getReviewTag();
-            reviewTag.setTagCount(reviewTag.getTagCount() - 1); // 기존 태그 카운트 감소
-            if (reviewTag.getTagCount() <= 0) {
-                reviewTagRepository.delete(reviewTag); // 태그 카운트가 0이 되면 삭제
-            } else {
-                reviewTagRepository.save(reviewTag);
-            }
-        }
-
-        // 새로운 태그 추가 및 매핑 저장
-        reviewRequestDto.getPositiveTags().forEach(tag -> {
-            Optional<ReviewTag> existingTag = reviewTagRepository.findByProductIdAndTag(product.getId(), tag, null);
-            ReviewTag reviewTag;
-            if (existingTag.isPresent()) {
-                reviewTag = existingTag.get();
-                reviewTag.setTagCount(reviewTag.getTagCount() + 1); // 기존 태그 카운트 증가
-            } else {
-                reviewTag = ReviewTag.builder()
-                        .productId(product.getId())
-                        .positiveTagEnum(tag)
-                        .tagCount(1)
-                        .positiveNegative(true)
-                        .build();
-            }
-            reviewTagRepository.save(reviewTag);
-            reviewTagMappingRepository.save(new ReviewTagMapping(existingReview, reviewTag));
-        });
-
-        reviewRequestDto.getNegativeTags().forEach(tag -> {
-            Optional<ReviewTag> existingTag = reviewTagRepository.findByProductIdAndTag(product.getId(), null, tag);
-            ReviewTag reviewTag;
-            if (existingTag.isPresent()) {
-                reviewTag = existingTag.get();
-                reviewTag.setTagCount(reviewTag.getTagCount() + 1); // 기존 태그 카운트 증가
-            } else {
-                reviewTag = ReviewTag.builder()
-                        .productId(product.getId())
-                        .negativeTagEnum(tag)
-                        .tagCount(1)
-                        .positiveNegative(false)
-                        .build();
-            }
-            reviewTagRepository.save(reviewTag);
-            reviewTagMappingRepository.save(new ReviewTagMapping(existingReview, reviewTag));
-        });
-
-        // 새로운 topTags 계산
-        List<PositiveTagEnum> topTags = reviewTagRepository.findAll().stream()
-                .filter(tag -> tag.getPositiveNegative() && tag.getProductId() == product.getId())
-                .sorted((t1, t2) -> t2.getTagCount().compareTo(t1.getTagCount()))
-                .limit(3)
-                .map(ReviewTag::getPositiveTagEnum)
-                .collect(Collectors.toList());
-
-        product.setTags(topTags);
-        productRepository.save(product);
+        saveReviewTags(reviewRequestDto, existingReview, product);
     }
 
     @Override
     @Transactional
     public void deleteReview(Long reviewId) {
-        // 삭제할 리뷰 조회
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 리뷰를 찾을 수 없습니다."));
-
-        // 이미지 삭제 추가
-        List<String> oldImageUrls = review.getImageUrls();
-        if(!oldImageUrls.isEmpty()) {
-            for (String imageUrl : oldImageUrls) {
-                s3Util.deleteFile(imageUrl);
-            }
-        }
-
         Product product = review.getProduct();
 
-        // 리뷰의 평점을 상품에서 제거
         double newStarRate = ((product.getStarRate() * product.getReviewCount()) - review.getRating()) / (product.getReviewCount() - 1);
-        product.setStarRate(product.getReviewCount() > 1 ? newStarRate : 0.0); // 리뷰가 하나일 경우 별점 0으로 설정
+        product.setStarRate(product.getReviewCount() > 1 ? newStarRate : 0.0);
         product.setReviewCount(product.getReviewCount() - 1);
         productRepository.save(product);
 
-        // 태그 매핑 제거
-        List<ReviewTagMapping> mappings = reviewTagMappingRepository.findAllByReview(review);
-
         reviewTagMappingRepository.deleteAllByReview(review);
-
-        for (ReviewTagMapping mapping : mappings) {
-            ReviewTag reviewTag = mapping.getReviewTag();
-            reviewTag.setTagCount(reviewTag.getTagCount() - 1);
-            if (reviewTag.getTagCount() <= 0) {
-                reviewTagRepository.delete(reviewTag); // 태그 카운트가 0이면 삭제
-            } else {
-                reviewTagRepository.save(reviewTag);
-            }
-        }
-
-        // 리뷰 삭제
         reviewRepository.delete(review);
 
-        // topTags 업데이트
-        List<PositiveTagEnum> topTags = reviewTagRepository.findAll().stream()
-                .filter(tag -> tag.getPositiveNegative() && tag.getProductId() == product.getId() && tag.getTagCount() > 0)
-                .sorted((t1, t2) -> t2.getTagCount().compareTo(t1.getTagCount()))
+        updateTopTags(product);
+    }
+
+    private void saveReviewTags(ReviewRequestDto reviewRequestDto, Review review, Product product) {
+        reviewRequestDto.getPositiveTags().forEach(tag -> saveTag(product, review, tag, true));
+        reviewRequestDto.getNegativeTags().forEach(tag -> saveTag(product, review, tag, false));
+        updateTopTags(product);
+    }
+
+    private void saveTag(Product product, Review review, Enum<?> tag, boolean isPositive) {
+        Optional<ReviewTag> existingTag = reviewTagRepository.findByProductIdAndTag(
+                product.getId(), isPositive ? (PositiveTagEnum) tag : null, isPositive ? null : (NegativeTagEnum) tag);
+        ReviewTag reviewTag = existingTag.orElseGet(() -> ReviewTag.builder()
+                .productId(product.getId())
+                .positiveTagEnum(isPositive ? (PositiveTagEnum) tag : null)
+                .negativeTagEnum(isPositive ? null : (NegativeTagEnum) tag)
+                .tagCount(0)
+                .positiveNegative(isPositive)
+                .build());
+        reviewTag.setTagCount(reviewTag.getTagCount() + 1);
+        reviewTagRepository.save(reviewTag);
+        reviewTagMappingRepository.save(new ReviewTagMapping(review, reviewTag));
+    }
+
+    private void updateTopTags(Product product) {
+        List<PositiveTagEnum> topPositiveTags = reviewTagRepository.findAll().stream()
+                .filter(tag -> tag.getPositiveNegative() && tag.getProductId().equals(product.getId()))
+                .sorted(Comparator.comparingInt(ReviewTag::getTagCount).reversed())
                 .limit(3)
                 .map(ReviewTag::getPositiveTagEnum)
                 .collect(Collectors.toList());
+        product.setPositiveTop3tags(topPositiveTags);
 
-        product.setTags(topTags);
+        List<NegativeTagEnum> topNegativeTags = reviewTagRepository.findAll().stream()
+                .filter(tag -> !tag.getPositiveNegative() && tag.getProductId().equals(product.getId()))
+                .sorted(Comparator.comparingInt(ReviewTag::getTagCount).reversed())
+                .limit(3)
+                .map(ReviewTag::getNegativeTagEnum)
+                .collect(Collectors.toList());
+        product.setNegativeTop3tags(topNegativeTags);
+
         productRepository.save(product);
     }
 
+    @Override
+    public Page<ReviewResponse> bookmarkProductList(Long memberId, int page, int size) {
+//        좋아요한 리뷰 보류
+        return null;
+    }
 
+    @Override
+    @Transactional
+    public void reviewLike(Long reviewId, Long memberId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 리뷰 없음 id: " + reviewId));
+
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 유저 없음 id: " + memberId));
+
+        if(reviewLikeJpaRepository.existsByReviewAndMember(review, member)) {
+            throw new RuntimeException("이미 좋아요한 리뷰입니다.");
+        }
+
+        review.setLikeCount(review.getLikeCount() + 1);
+        reviewRepository.save(review);
+
+        ReviewLike reviewLike = new ReviewLike(member, review);
+        reviewLikeJpaRepository.save(reviewLike);
+    }
+
+    @Override
+    @Transactional
+    public void undoReviewLike(Long reviewId, Long memberId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 리뷰 없음 id: " + reviewId));
+
+        Member member = memberJpaRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 id에 맞는 유저 없음 id: " + memberId));
+
+        ReviewLike reviewLike = reviewLikeJpaRepository.findByReviewAndMember(review, member)
+                .orElseThrow(() -> new EntityNotFoundException("해당 리뷰는 좋아요 목록에 없습니다."));
+
+        review.setLikeCount(review.getLikeCount() - 1);
+        reviewRepository.save(review);
+
+        reviewLikeJpaRepository.delete(reviewLike);
+    }
 }

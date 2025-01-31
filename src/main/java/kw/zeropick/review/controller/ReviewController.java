@@ -3,6 +3,7 @@ package kw.zeropick.review.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import kw.zeropick.common.LoginUser;
 import kw.zeropick.payload.ApiResponse;
 import kw.zeropick.product.dto.ProductDto;
 import kw.zeropick.review.domain.PositiveTagEnum;
@@ -31,7 +32,8 @@ public class ReviewController {
     public ResponseEntity<String> createReview(
             @RequestPart(value = "review") ReviewRequestDto reviewRequestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        reviewService.createReview(reviewRequestDto, files);
+        Long memberId = 1L;
+        reviewService.createReview(memberId, reviewRequestDto, files);
         return ResponseEntity.ok("리뷰가 성공적으로 등록되었습니다.");
     }
 
@@ -66,6 +68,51 @@ public class ReviewController {
                     ApiResponse.builder()
                             .check(true)
                             .information(reviews)
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information(e.getMessage())
+                            .build()
+            );
+        }
+    }
+    // 리뷰 좋아요 하기
+    @Operation(summary = "리뷰 좋아요 하기", description = "리뷰 좋아요 추가 요청(로그인 기능 적용 전이므로 1번유저 고정)")
+    @PostMapping("/likeReview/{reviewId}")
+    public ResponseEntity<ApiResponse> productCompare(@PathVariable Long reviewId) {
+        Long memberId = LoginUser.get().getId();
+        try {
+            reviewService.reviewLike(reviewId, memberId);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .check(true)
+                            .information("Review like successfully")
+                            .build()
+            );
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information(e.getMessage())
+                            .build()
+            );
+        }
+    }
+
+    // 리뷰 좋아요 취소
+    @Operation(summary = "리뷰 좋아요 취소", description = "리뷰 좋아요 취소 요청(로그인 기능 적용 전이므로 1번유저 고정)")
+    @DeleteMapping("/likeReview/{reviewId}")
+    public ResponseEntity<ApiResponse> productCompareUndo(@PathVariable Long reviewId) {
+        Long memberId = LoginUser.get().getId();
+        try {
+            reviewService.undoReviewLike(reviewId, memberId);
+            return ResponseEntity.ok(
+                    ApiResponse.builder()
+                            .check(true)
+                            .information("Review like deleted successfully")
                             .build()
             );
         } catch (Exception e) {

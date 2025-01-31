@@ -88,6 +88,7 @@ public class ReviewQueryDslRepositoryImpl implements ReviewQueryDslRepository {
                 .userName("User") // 실제 사용자 정보를 가져오는 로직으로 대체
                 .rating(review.getRating())
                 .content(review.getContent())
+                .likeCount(review.getLikeCount())
                 .imageUrls(review.getImageUrls())
                 .positiveTags(positiveTags)
                 .negativeTags(negativeTags)

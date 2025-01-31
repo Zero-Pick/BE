@@ -1,28 +1,25 @@
 package kw.zeropick.member.dto;
 
 
-import jakarta.validation.constraints.NotNull;
-import kw.zeropick.member.domain.MarketingAgree;
+import kw.zeropick.member.domain.MemberInterest;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Data
-@NoArgsConstructor
 public class MemberInfoChangeDto {
-    @NotNull
-    private String phoneNumber;
-    @NotNull
-    private LocalDate birthDate;
-    @NotNull
-    private MarketingAgree marketingAgree;
+
+    private String email;
+    private String nickname;
+    private MemberInterest interest;
+    private Boolean diabetes;
 
     @Builder
-    public MemberInfoChangeDto(String phoneNumber, LocalDate birthDate, MarketingAgree marketingAgree) {
-        this.phoneNumber = phoneNumber;
-        this.birthDate = birthDate;
-        this.marketingAgree = marketingAgree;
+    public MemberInfoChangeDto(String email, String nickname, MemberInterest interest, Boolean diabetes) {
+        this.email = email;
+        this.nickname = nickname;
+        this.interest = interest;
+        this.diabetes = diabetes;
     }
+
 }
