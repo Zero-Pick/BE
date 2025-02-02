@@ -45,6 +45,8 @@ public class Product extends BaseEntity {
 
     private String imageUrl;
 
+    private String productLink;
+
     private int bookmarkCount;
 
     private int reviewCount;
@@ -110,6 +112,18 @@ public class Product extends BaseEntity {
     public void setPopularity() {
         int starRateScore = this.starRate != null ? (int) Math.round(this.starRate * 20 * 350) : 0;
         this.popularity = this.viewCount * 150 + this.bookmarkCount * 250 + this.reviewCount * 250 + starRateScore;
+    }
+
+    public void setProductLink(String productLink) {
+        this.productLink = productLink;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
     }
 
 
