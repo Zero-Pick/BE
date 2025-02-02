@@ -34,6 +34,8 @@ public class ProductDto {
 
     private String imageUrl;
 
+    private String productLink; // 최저가 상품 링크 추가
+
     private int bookmarkCount;
 
     private int reviewCount;

@@ -248,6 +248,7 @@ public class ProductServiceImpl implements ProductService{
                 .starRate(product.getStarRate())
                 .viewCount(product.getViewCount())
                 .imageUrl(product.getImageUrl())
+                .productLink(product.getProductLink())
                 .bookmarkCount(product.getBookmarkCount())
                 .reviewCount(product.getReviewCount())
                 .bookmarked(isBookmarked)
