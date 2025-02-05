@@ -53,7 +53,7 @@ public class ProductServiceImpl implements ProductService{
 
         ProductDto productDto = toProductDto(product, null);
         List<ArtificialSweetDto> artificialSweetDtos = new ArrayList<>();
-        if(product.getIngredient().getAllulose() != 0){
+        if(product.getIngredient().getAllulose() != null && product.getIngredient().getAllulose() != 0){
             ArtificialSweetDto artificialSweetDto = ArtificialSweetDto.builder()
                     .sweetName("알룰로오스")
                     .sweetDetail("알룰로오스 설명")
@@ -62,7 +62,7 @@ public class ProductServiceImpl implements ProductService{
                     .build();
             artificialSweetDtos.add(artificialSweetDto);
         }
-        if(product.getIngredient().getErythritol() != 0){
+        if(product.getIngredient().getErythritol() != null && product.getIngredient().getErythritol() != 0){
             ArtificialSweetDto artificialSweetDto = ArtificialSweetDto.builder()
                     .sweetName("에리트리톨")
                     .sweetDetail("에리트리톨 설명")
