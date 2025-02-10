@@ -4,9 +4,11 @@ package kw.zeropick.member.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import kw.zeropick.common.converter.StringListToStringConverter;
+import kw.zeropick.registration.domain.Registration;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
