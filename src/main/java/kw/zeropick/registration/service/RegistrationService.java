@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class RegistrationService {
@@ -21,7 +24,7 @@ public class RegistrationService {
                 .member(member)
                 .brand(requestDto.getBrand())
                 .productName(requestDto.getProductName())
-                .category(Category.valueOf(requestDto.getCategory()))
+                .category(requestDto.getCategory())
                 .ingredient(requestDto.getIngredient())
                 .additional(requestDto.getAdditional())
                 .build();
@@ -29,6 +32,14 @@ public class RegistrationService {
         Registration savedRegistration = registrationRepository.save(registration);
 
         return new RegistrationResponse(savedRegistration);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RegistrationResponse> getAllRegistrations(Member member) {
+        List<Registration> registrations = registrationRepository.findByMember(member);
+        return registrations.stream()
+                .map(RegistrationResponse::new)
+                .collect(Collectors.toList());
     }
 
 }
