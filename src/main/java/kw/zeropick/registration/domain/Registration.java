@@ -41,6 +41,10 @@ public class Registration extends BaseEntity {
 
     private String additional;
 
+    private RegistrationStatus registrationStatus; // 등록 요청 처리 상태
+
+    private String rejectionReason; // 반려 사유
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -67,5 +71,13 @@ public class Registration extends BaseEntity {
 
     public void setAdditional(String additional) {
         this.additional = additional;
+    }
+
+    public void setRegistrationStatus(RegistrationStatus registrationStatus) {
+        this.registrationStatus = registrationStatus;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 }

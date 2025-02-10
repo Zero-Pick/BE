@@ -4,6 +4,7 @@ import kw.zeropick.member.domain.Member;
 import kw.zeropick.product.domain.Category;
 import kw.zeropick.registration.controller.response.RegistrationResponse;
 import kw.zeropick.registration.domain.Registration;
+import kw.zeropick.registration.domain.RegistrationStatus;
 import kw.zeropick.registration.dto.RegistrationRequestDto;
 import kw.zeropick.registration.repository.RegistrationRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class RegistrationService {
                 .category(requestDto.getCategory())
                 .ingredient(requestDto.getIngredient())
                 .additional(requestDto.getAdditional())
+                .registrationStatus(RegistrationStatus.PENDING)
                 .build();
 
         Registration savedRegistration = registrationRepository.save(registration);
