@@ -1,5 +1,6 @@
 package kw.zeropick.product.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductRecentController {
     private final ProductRecentService recentService;
 
+    @Operation(summary = "최근 본 상품 저장(쿠기명:'recentProducts')", description = "'recentProducts'이름의 쿠키에 상품id, 이름, 이미지링크를 인코딩해 저장함")
     @PostMapping("/{productId}")
     public ResponseEntity<ApiResponse> addRecentProduct(
             @PathVariable Long productId,
@@ -58,6 +60,7 @@ public class ProductRecentController {
         }
     }
 
+    @Operation(summary = "최근 본 상품 저장 보기", description = "쿠키를 가져와 어떤 상품이 저장되어 있는지 확인 가능")
     @GetMapping
     public ResponseEntity<ApiResponse> getRecentProducts(HttpServletRequest request) {
         try {
