@@ -4,6 +4,7 @@ import kw.zeropick.registration.domain.Registration;
 import kw.zeropick.registration.domain.RegistrationStatus;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class RegistrationResponse {
     private final RegistrationStatus registrationStatus;
     private final String rejectionReason;
     private List<String> imageUrls = new ArrayList<>();
+    private LocalDateTime createdAt;
 
     public RegistrationResponse(Registration registration) {
         this.id = registration.getId();
@@ -29,5 +31,6 @@ public class RegistrationResponse {
         this.registrationStatus = registration.getRegistrationStatus();
         this.rejectionReason = registration.getRejectionReason();
         this.imageUrls = registration.getImageUrls();
+        this.createdAt = registration.getCreatedAt();
     }
 }
