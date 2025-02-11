@@ -2,6 +2,7 @@ package kw.zeropick.registration.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import kw.zeropick.common.converter.StringListToStringConverter;
 import kw.zeropick.common.domain.BaseEntity;
 import kw.zeropick.member.domain.Member;
 import kw.zeropick.product.domain.Category;
@@ -9,6 +10,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
@@ -37,7 +41,8 @@ public class Registration extends BaseEntity {
 
     private String ingredient;
 
-    private String imageUrl;
+    @Convert(converter = StringListToStringConverter.class)
+    private List<String> imageUrls = new ArrayList<>();
 
     private String additional;
 
@@ -65,10 +70,9 @@ public class Registration extends BaseEntity {
         this.ingredient = ingredient;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
-
     public void setAdditional(String additional) {
         this.additional = additional;
     }

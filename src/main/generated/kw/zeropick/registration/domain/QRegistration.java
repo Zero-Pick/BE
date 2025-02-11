@@ -35,13 +35,17 @@ public class QRegistration extends EntityPathBase<Registration> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final StringPath imageUrl = createString("imageUrl");
+    public final ListPath<String, StringPath> imageUrls = this.<String, StringPath>createList("imageUrls", String.class, StringPath.class, PathInits.DIRECT2);
 
     public final StringPath ingredient = createString("ingredient");
 
     public final kw.zeropick.member.domain.QMember member;
 
     public final StringPath productName = createString("productName");
+
+    public final EnumPath<RegistrationStatus> registrationStatus = createEnum("registrationStatus", RegistrationStatus.class);
+
+    public final StringPath rejectionReason = createString("rejectionReason");
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;

@@ -4,6 +4,9 @@ import kw.zeropick.registration.domain.Registration;
 import kw.zeropick.registration.domain.RegistrationStatus;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 public class RegistrationResponse {
     private final Long id;
@@ -14,6 +17,7 @@ public class RegistrationResponse {
     private final String additional;
     private final RegistrationStatus registrationStatus;
     private final String rejectionReason;
+    private List<String> imageUrls = new ArrayList<>();
 
     public RegistrationResponse(Registration registration) {
         this.id = registration.getId();
@@ -24,5 +28,6 @@ public class RegistrationResponse {
         this.additional = registration.getAdditional();
         this.registrationStatus = registration.getRegistrationStatus();
         this.rejectionReason = registration.getRejectionReason();
+        this.imageUrls = registration.getImageUrls();
     }
 }
