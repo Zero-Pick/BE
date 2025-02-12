@@ -3,6 +3,7 @@ package kw.zeropick.product.service;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import kw.zeropick.common.domain.exception.ResourceNotFoundException;
 import kw.zeropick.member.domain.Member;
 import kw.zeropick.member.repository.MemberJpaRepository;
 import kw.zeropick.product.domain.Bookmark;
@@ -294,6 +295,12 @@ public class ProductServiceImpl implements ProductService{
                 .stream()
                 .limit(limit)
                 .toList();
+    }
+
+    @Override
+    public Product getById(Long productId) {
+        return productJpaRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", productId));
     }
 
 }

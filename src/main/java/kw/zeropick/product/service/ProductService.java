@@ -21,4 +21,6 @@ public interface ProductService {
     boolean isBookmarkedByUser(Long productId, Long memberId);
     boolean isComparedByUser(Long productId, Long memberId);
     List<Product> findTopProductsByPopularity(int limit);
+
+    public Product getById(Long productId);
 }
